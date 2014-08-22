@@ -7,17 +7,17 @@
 -type column() :: [chip()].
 
 -type board() ::
-  {column(),column(),column(),column(),column(),column(),column()}.
+  {column(), column(), column(), column(), column(), column(), column()}.
 
 -type col() :: 1..7.
 
--record(state,{board::board(), next_chip = 1 :: chip()}).
+-record(state, {board::board(), next_chip = 1 :: chip()}).
 
 -type state() :: #state{}.
 
 -spec start() -> state().
 start()  -> 
-  #state{board = {[],[],[],[],[],[],[]}}.
+  #state{board = {[], [], [], [], [], [], []}}.
 
 -spec play(col(), state()) -> won | drawn | {next, state()}.
 play(Col, _) when Col < 1 orelse Col > 7 ->
@@ -25,14 +25,15 @@ play(Col, _) when Col < 1 orelse Col > 7 ->
 play(Col, State = #state{board = Board, next_chip = NextChip}) ->
   Column = element(Col, Board),
   case Column of
-    [_,_,_,_,_,_,_] -> throw(invalid_column);
+    [_, _, _, _, _, _, _] -> throw(invalid_column);
     [NextChip, NextChip, NextChip | _] -> won;
     _ ->
       NewColumn = [NextChip|Column],
       NewBoard = setelement(Col, Board, NewColumn),
       case analyze(Col, NewColumn, NextChip, NewBoard) of
         next ->
-          NewState = State#state{board = NewBoard, next_chip = diff_chip(NextChip)},
+          NewState = State#state{board
+           = NewBoard, next_chip = diff_chip(NextChip)},
           {next, NewState};
         won -> won;
         drawn -> drawn
@@ -44,21 +45,15 @@ diff_chip(2) -> 1.
 
 analyze(Col, Column, Chip, Board) ->
   RowNum = length(Column),
-  case wins_row(RowNum, Chip, Board) of
-    true -> won;
-    false ->
-      case wins_left_diag(Col, RowNum, Chip, Board) of
-        true -> won;
-        false ->
-          case wins_right_diag(Col, RowNum, Chip, Board) of
-            true -> won;
-            false ->
-              case is_full(Board) of
+  case wins_row(RowNum, Chip, Board) orelse
+       wins_left_diag(Col, RowNum, Chip, Board) orelse
+       wins_right_diag(Col, RowNum, Chip, Board) of
+          true -> won;
+          false ->
+            case is_full(Board) of
                 true -> drawn;
                 false -> next
-              end
-          end
-      end
+            end
   end.
 
 wins_row(RowNum, Chip, Board) ->
@@ -98,7 +93,7 @@ get_down_left_diag(Col, RowNum, Board, Acc) ->
   get_down_left_diag(Col+1, RowNum-1, Board, Next).
 
 get_right_diag(Col, RowNum, Board) ->
-  DownRightDiag = get_down_right_diag(Col, RowNum, Board,[]),
+  DownRightDiag = get_down_right_diag(Col, RowNum, Board, []),
   UpRightDiag = get_up_right_diag(Col, RowNum, Board, []),
   DownRightDiag ++ tl(lists:reverse(UpRightDiag)).
 
@@ -118,7 +113,8 @@ get_up_right_diag(Col, RowNum, Board, Acc) ->
   Next = [Chip | Acc],
   get_up_right_diag(Col+1, RowNum+1, Board, Next).
 
-get_chip(RowNum, Column) when length(Column) >= RowNum -> lists:nth(RowNum, lists:reverse(Column));
+get_chip(RowNum, Column) when length(Column) >= RowNum ->
+  lists:nth(RowNum, lists:reverse(Column));
 get_chip(_RowNum, _Column) -> 0.
 
 get_chip(Col, RowNum, Board) ->

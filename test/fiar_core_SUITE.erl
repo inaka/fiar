@@ -55,7 +55,7 @@ empty(_Config) ->
     fun(Col) ->
       {next, _} = fiar_core:play(Col, Board)
     end,
-    [1,2,3,4,5,6,7]),
+    [1, 2, 3, 4, 5, 6, 7]),
   ok.
 
 %% @doc no row accepts more than 7 chips
@@ -84,7 +84,7 @@ drawn(_Config) ->
 -spec wins_vertically(config()) -> ok.
 wins_vertically(_Config) ->
   EmptyBoard = fiar_core:start(),
-  CheckMateBoard = drop_chips([1,2,1,2,1,2], EmptyBoard),
+  CheckMateBoard = drop_chips([1, 2, 1, 2, 1, 2], EmptyBoard),
   won = fiar_core:play(1, CheckMateBoard),
   ok.
 
@@ -92,7 +92,7 @@ wins_vertically(_Config) ->
 -spec wins_horizontally(config()) -> ok.
 wins_horizontally(_Config) ->
   EmptyBoard = fiar_core:start(),
-  CheckMateBoard = drop_chips([2,5,3,6,4,7], EmptyBoard),
+  CheckMateBoard = drop_chips([2, 5, 3, 6, 4, 7], EmptyBoard),
   won = fiar_core:play(1, CheckMateBoard),
   ok.
 
@@ -100,7 +100,7 @@ wins_horizontally(_Config) ->
 -spec wins_right_diagonally(config()) -> ok.
 wins_right_diagonally(_Config) ->
   EmptyBoard = fiar_core:start(),
-  CheckMateBoard = drop_chips([4,4,4,4,6,3,3,3,2,2,7], EmptyBoard),
+  CheckMateBoard = drop_chips([4, 4, 4, 4, 6, 3, 3, 3, 2, 2, 7], EmptyBoard),
   won = fiar_core:play(1, CheckMateBoard),
   ok.
 
@@ -108,14 +108,14 @@ wins_right_diagonally(_Config) ->
 -spec wins_left_diagonally(config()) -> ok.
 wins_left_diagonally(_Config) ->
   EmptyBoard = fiar_core:start(),
-  CheckMateBoard = drop_chips([4,4,4,4,2,5,5,5,6,6,1], EmptyBoard),
+  CheckMateBoard = drop_chips([4, 4, 4, 4, 2, 5, 5, 5, 6, 6, 1], EmptyBoard),
   won = fiar_core:play(7, CheckMateBoard),
   ok.
 
 %% @private
 %% @doc fills all columns in the board except #3
 almost_fill_board(Board) ->
-  WithColsExcept3 = lists:foldl(fun fill_column/2, Board, [1,4,2,5,6,7]),
+  WithColsExcept3 = lists:foldl(fun fill_column/2, Board, [1, 4, 2, 5, 6, 7]),
   drop_chips(6, 3, WithColsExcept3).
 
 %% @private

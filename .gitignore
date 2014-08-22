@@ -5,3 +5,4 @@ deps
 *.plt
 erl_crash.dump
 .erlang.mk.packages.v2
+log*/

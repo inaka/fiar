@@ -4,7 +4,7 @@
    "For in a Row - A game to learn Erlang"},
   {vsn, "0.1"},
   {applications, [kernel, stdlib]},
-  {modules, []},
+  {modules, ['fiar_core']},
   {registered, []}
  ]
 }.

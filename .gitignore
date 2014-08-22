@@ -1,7 +1,9 @@
 .eunit
 deps
+ebin
 *.o
 *.beam
 *.plt
 erl_crash.dump
 .erlang.mk.packages.v2
+log*/

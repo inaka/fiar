@@ -39,7 +39,7 @@
 
 -type config() :: [{atom(), term()}].
 -export([all/0, init_per_testcase/2, end_per_testcase/2]).
--export([empty/1, invalid/1, drawn/1]).
+-export([empty/1, invalid/1, drawn/1, stop/1]).
 -export([wins_vertically/1, wins_horizontally/1, 
          wins_right_diagonally/1, wins_left_diagonally/1]).
 
@@ -118,6 +118,17 @@ wins_left_diagonally(Config) ->
  drop_chips([4, 4, 4, 4, 2, 5, 5, 5, 6, 6, 1], Pid),
  won = fiar_match:play(Pid, 7),
  ok.
+
+%% @doc test the server stoped
+-spec stop(config()) -> ok.
+stop(Config) ->
+  Pid = proplists:get_value(pid, Config),
+  fiar_match:stop(Pid),
+  try fiar_match:play(Pid, 1) of
+    Result -> no_result = Result
+  catch
+    _:Ex -> ok
+  end.
 
 %% @private
 %% @doc fills all columns in the board except #3

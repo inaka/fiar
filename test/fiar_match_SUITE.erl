@@ -22,10 +22,11 @@
 %%    </ul>
 %%
 %%    == Problem Statement ==
-%%    Create a 4-in-a-row game manager
+%%    Create fiar_match, a module that let's users create matches (as processes) and keep their state in them.
 %%    <dl>
-%%    <dt>start() -> board().</dt><dd>Returns an empty board</dd>
-%%    <dt>play(Col, Board) -> won | drawn | {next, board()}.</dt>
+%%    <dt>start() -> pid().</dt>
+%%    <dt>stop(Pid) -> ok.</dt>
+%%    <dt>play(Pid, Col) -> won | drawn | next.</dt>
 %%      <dd>Accepts a play and returns:
 %%        <dl>
 %%          <dt>won</dt><dd>the player won</dd>
@@ -34,6 +35,7 @@
 %%        </dl>
 %%      </dd>
 %%    </dl>
+
 -module(fiar_match_SUITE).
 -author('elbrujohalcon@inaka.net').
 
@@ -54,7 +56,6 @@ end_per_testcase(_, Config) ->
   Pid = proplists:get_value(pid, Config),
   fiar_match:stop(Pid),
   Config.
-
 
 %% @private
 -spec all() -> [atom()].
@@ -124,12 +125,14 @@ wins_left_diagonally(Config) ->
  ok.
 
 %% @doc test handle_cast on server
+-spec handle_cast_test(config()) -> ok.
 handle_cast_test(Config) ->
   Pid = proplists:get_value(pid, Config),
   gen_server:cast(Pid, unexpected),
   ok.
 
 %% @doc test handle_info on server
+-spec handle_info_test(config()) -> ok.
 handle_info_test(Config) ->
   Pid = proplists:get_value(pid, Config),
   Pid ! unexpected,

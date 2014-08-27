@@ -44,14 +44,6 @@
          wins_right_diagonally/1, wins_left_diagonally/1]).
 -export ([fail_board/1]).
 
--type chip() :: 1|2.
--type column() :: [chip()].
--type board() ::
-  {column(), column(), column(), column(), column(), column(), column()}.
--type col() :: 1..7.
-
--record(state, {board::board(), next_chip = 1 :: chip()}).
-
 %% @private
 -spec all() -> [atom()].
 all() -> [Fun || {Fun, 1} <- module_info(exports), Fun =/= module_info].
@@ -63,7 +55,7 @@ fail_board(_Config) ->
   try fiar_core:play(8, EmptyBoard) of
       Result -> no_result = Result
   catch
-      invalid_column -> invalid_column
+      invalid_column -> ok
   end.
 
 %% @doc start returns an empty board

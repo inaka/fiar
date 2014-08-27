@@ -90,5 +90,5 @@ terminate(_Reason, _Server) ->
 
 
 %% Code change
-code_change(_OldVersion, _Server, _Extra) -> {ok, _Server}.
+code_change(_OldVersion, Server, _Extra) -> {ok, Server}.
   

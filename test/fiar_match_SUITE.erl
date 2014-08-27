@@ -22,7 +22,8 @@
 %%    </ul>
 %%
 %%    == Problem Statement ==
-%%    Create fiar_match, a module that let's users create matches (as processes) and keep their state in them.
+%%    Create fiar_match, a module that let's users create matches (as processes)
+%     and keep their state in them.
 %%    <dl>
 %%    <dt>start() -> pid().</dt>
 %%    <dt>stop(Pid) -> ok.</dt>
@@ -146,7 +147,7 @@ handle_info_test(Config) ->
    try fiar_match:play(Pid, 1) of
      Result -> no_result = Result
    catch
-     exit:{normal,{gen_server,call,[_,{play,1}]}} -> ok
+     exit:{normal, {gen_server, call, [_, {play, 1}]}} -> ok
    end.
 
 %% @private

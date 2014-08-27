@@ -80,9 +80,9 @@ handle_cast(Message, State) ->
 % {noreply,NewState,Timeout} 
 % {noreply,NewState,hibernate}
 % {stop,Reason,NewState}
-handle_info(_Message, _Server) -> 
-    io:format("Generic info handler: '~p' '~p'~n",[_Message, _Server]),
-    {noreply, _Server}.
+handle_info(Message, State) -> 
+    io:format("Generic info handler: '~p' '~p'~n",[Message, State]),
+    {noreply, State}.
 
 %% Server termination
 terminate(_Reason, _Server) -> 

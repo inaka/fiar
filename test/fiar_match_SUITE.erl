@@ -42,15 +42,19 @@
 -export([empty/1, invalid/1, drawn/1, stop/1]).
 -export([wins_vertically/1, wins_horizontally/1, 
          wins_right_diagonally/1, wins_left_diagonally/1]).
+-export([handle_info_test/1, handle_cast_test/1]).
 
 init_per_testcase(_, Config) ->
   {ok, Pid} = fiar_match:start(),
   [{pid, Pid} | Config].
 
+end_per_testcase(stop, Config) ->
+  Config;
 end_per_testcase(_, Config) ->
   Pid = proplists:get_value(pid, Config),
   fiar_match:stop(Pid),
   Config.
+
 
 %% @private
 -spec all() -> [atom()].
@@ -119,16 +123,28 @@ wins_left_diagonally(Config) ->
  won = fiar_match:play(Pid, 7),
  ok.
 
-%% @doc test the server stoped
--spec stop(config()) -> ok.
-stop(Config) ->
+%% @doc test handle_cast on server
+handle_cast_test(Config) ->
   Pid = proplists:get_value(pid, Config),
-  fiar_match:stop(Pid),
-  try fiar_match:play(Pid, 1) of
-    Result -> no_result = Result
-  catch
-    _:Ex -> ok
-  end.
+  gen_server:cast(Pid, unexpected),
+  ok.
+
+%% @doc test handle_info on server
+handle_info_test(Config) ->
+  Pid = proplists:get_value(pid, Config),
+  Pid ! unexpected,
+  ok.
+
+%% @doc test the server stoped
+ -spec stop(config()) -> ok.
+ stop(Config) ->
+   Pid = proplists:get_value(pid, Config),
+   fiar_match:stop(Pid),
+   try fiar_match:play(Pid, 1) of
+     Result -> no_result = Result
+   catch
+     exit:{normal,{gen_server,call,[_,{play,1}]}} -> ok
+   end.
 
 %% @private
 %% @doc fills all columns in the board except #3

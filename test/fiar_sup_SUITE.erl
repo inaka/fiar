@@ -35,7 +35,7 @@
 
 -type config() :: [{atom(), term()}].
 -export([all/0]).
--export([start/1, new_child/1]).
+-export([start/1, new_child/1, two_children/1]).
 
 %% @private
 -spec all() -> [atom()].
@@ -49,3 +49,14 @@ start(_Config) ->
 new_child(_Config) ->
 	fiar_sup:start_link(),
 	fiar_sup:start_match().
+
+-spec two_children(config()) -> ok.
+two_children(_Config) ->
+	fiar_sup:start_link(),
+	{ok, Ch1} = fiar_sup:start_match(),
+	{ok, Ch2} = fiar_sup:start_match(),
+	ok =
+		case Ch1 of
+			Ch2 -> iguales;
+			_ -> ok
+		end.

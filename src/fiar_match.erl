@@ -31,7 +31,7 @@
 
 -spec start() -> {ok, pid()}.
 start() -> 
-    gen_server:start({local, ?MODULE}, ?MODULE, [], []).
+    gen_server:start_link(?MODULE, [], []).
 
 -spec stop(pid()) -> ok.
 stop(Pid) ->

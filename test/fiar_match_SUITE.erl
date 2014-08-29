@@ -45,13 +45,24 @@
 -export([empty/1, invalid/1, drawn/1, stop/1]).
 -export([wins_vertically/1, wins_horizontally/1, 
          wins_right_diagonally/1, wins_left_diagonally/1]).
--export([handle_info_test/1, handle_cast_test/1]).
+-export([handle_info_test/1, handle_cast_test/1,
+         two_matches/1]).
 
+init_per_testcase(two_matches, Config) ->
+  {ok, Pid} = fiar_match:start(),
+  {ok, Pid2} = fiar_match:start(),
+  [{pid, Pid}, {pid2, Pid2} | Config];
 init_per_testcase(_, Config) ->
   {ok, Pid} = fiar_match:start(),
   [{pid, Pid} | Config].
 
 end_per_testcase(stop, Config) ->
+  Config;
+end_per_testcase(two_matches, Config) ->
+  Pid1 = proplists:get_value(pid, Config),
+  Pid2 = proplists:get_value(pid2, Config),
+  fiar_match:stop(Pid1),
+  fiar_match:stop(Pid2),
   Config;
 end_per_testcase(_, Config) ->
   Pid = proplists:get_value(pid, Config),
@@ -150,6 +161,20 @@ handle_info_test(Config) ->
      exit:{normal, {gen_server, call, [_, {play, 1}]}} -> ok
    end.
 
+%% @doc test run two matches simultaneously
+ -spec two_matches(config()) -> ok.
+ two_matches(Config) ->
+   Pid1 = proplists:get_value(pid, Config),
+   Pid2 = proplists:get_value(pid2, Config),
+   fill_column(1, Pid1),
+   drop_chips([1, 2, 1, 2, 1, 2], Pid2),
+   won = fiar_match:play(Pid2, 1),
+   try fiar_match:play(Pid1, 1) of
+      Result -> no_result = Result
+    catch
+      _:_ -> ok
+    end.
+   
 %% @private
 %% @doc fills all columns in the board except #3
 almost_fill_board(Pid) ->

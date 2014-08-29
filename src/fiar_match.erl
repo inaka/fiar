@@ -10,14 +10,14 @@
          terminate/2, 
          code_change/3]).
 
--type chip() :: 1|2.
+%-type chip() :: 1|2.
 
--type column() :: [chip()].
+%-type column() :: [chip()].
 
--type board() ::
-  {column(), column(), column(), column(), column(), column(), column()}.
+%-type board() ::
+%  {column(), column(), column(), column(), column(), column(), column()}.
 
--type col() :: 1..7.
+%-type col() :: 1..7.
 
 -type from() :: {pid(), _}.
 
@@ -25,7 +25,7 @@
 
 -type oldVsn() :: term() | {down, term()}.
 
--record(state, {board::board(), next_chip = 1 :: chip()}).
+-record(state, {board::fiar_core:board(), next_chip = 1 :: fiar_core:chip()}).
 
 -type state() :: #state{}.
 
@@ -37,7 +37,7 @@ start() ->
 stop(Pid) ->
     gen_server:cast(Pid, shutdown).
 
--spec play(pid(), col()) -> won | drawn | next.
+-spec play(pid(), fiar_core:col()) -> won | drawn | next.
 play(Pid, Col) -> 
   case gen_server:call(Pid, {play, Col}) of
     {ok, Reply} -> Reply;
@@ -49,13 +49,16 @@ init([]) ->
     EmptyState = fiar_core:start(),
     {ok, EmptyState}.
 
--spec handle_call({play, col()}, from(), state()) ->
-                  {reply, {ok | error, won | drawn | next}, state()}.
+-spec handle_call({play, fiar_core:col()}, from(), state()) ->
+                  {reply, {error, any()}, state()} | 
+                  {reply, {ok, won | drawn | next}, state()}.
 handle_call({play, Col}, _From, State) ->
- try {Reply, NewState} = case fiar_core:play(Col, State) of
-      {Result, NextState} -> {Result, NextState};
-      Result -> {Result, State}
-    end,
+  try
+    {Reply, NewState} =
+      case fiar_core:play(Col, State) of
+        {Result, NextState} -> {Result, NextState};
+        Result -> {Result, State}
+      end,
     {reply, {ok, Reply}, NewState}
   catch
     _:Ex ->

@@ -15,6 +15,8 @@
 
 -type state() :: #state{}.
 
+ -export_type([chip/0, board/0, col/0]).
+
 -spec start() -> state().
 start()  -> 
   #state{board = {[], [], [], [], [], [], []}}.

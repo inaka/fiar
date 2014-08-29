@@ -49,7 +49,8 @@ init([]) ->
     EmptyState = fiar_core:start(),
     {ok, EmptyState}.
 
--spec handle_call({play, col()}, from(), state()) -> {reply, {ok | error, won | drawn | next}, state()}.
+-spec handle_call({play, col()}, from(), state()) ->
+                  {reply, {ok | error, won | drawn | next}, state()}.
 handle_call({play, Col}, _From, State) ->
  try {Reply, NewState} = case fiar_core:play(Col, State) of
       {Result, NextState} -> {Result, NextState};
@@ -79,6 +80,7 @@ handle_info(Message, State) ->
 terminate(_Reason, _State) -> 
     io:format("Generic termination handler: '~p' '~p'~n",[_Reason, _State]).
 
--spec code_change(oldVsn(), state(), term()) -> {ok | error, state() | reason()}.
-code_change(_OldVersion, _State, _Extra) -> {ok, _State}.
+-spec code_change(oldVsn(), state(), term()) ->
+                  {ok | error, state() | reason()}.
+code_change(_OldVersion, State, _Extra) -> {ok, State}.
   

@@ -10,15 +10,6 @@
          terminate/2, 
          code_change/3]).
 
-%-type chip() :: 1|2.
-
-%-type column() :: [chip()].
-
-%-type board() ::
-%  {column(), column(), column(), column(), column(), column(), column()}.
-
-%-type col() :: 1..7.
-
 -type from() :: {pid(), _}.
 
 -type reason() :: normal | shutdown | {shutdown, term()} | term().

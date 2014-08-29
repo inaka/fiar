@@ -21,7 +21,7 @@
 -type state() :: #state{}.
 
 -spec start() -> {ok, pid()}.
-start() -> 
+start() ->
     gen_server:start_link(?MODULE, [], []).
 
 -spec stop(pid()) -> ok.

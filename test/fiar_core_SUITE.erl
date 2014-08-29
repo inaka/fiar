@@ -42,10 +42,21 @@
 -export([empty/1, invalid/1, drawn/1]).
 -export([wins_vertically/1, wins_horizontally/1, 
          wins_right_diagonally/1, wins_left_diagonally/1]).
+-export ([fail_board/1]).
 
 %% @private
 -spec all() -> [atom()].
 all() -> [Fun || {Fun, 1} <- module_info(exports), Fun =/= module_info].
+
+%% @doc test play with fail board
+-spec fail_board(config()) -> ok.
+fail_board(_Config) ->
+  EmptyBoard = fiar_core:start(),
+  try fiar_core:play(8, EmptyBoard) of
+      Result -> no_result = Result
+  catch
+      invalid_column -> ok
+  end.
 
 %% @doc start returns an empty board
 -spec empty(config()) -> ok.

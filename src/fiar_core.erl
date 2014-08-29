@@ -15,6 +15,8 @@
 
 -type state() :: #state{}.
 
+ -export_type([chip/0, board/0, col/0]).
+
 -spec start() -> state().
 start()  -> 
   #state{board = {[], [], [], [], [], [], []}}.
@@ -32,8 +34,8 @@ play(Col, State = #state{board = Board, next_chip = NextChip}) ->
       NewBoard = setelement(Col, Board, NewColumn),
       case analyze(Col, NewColumn, NextChip, NewBoard) of
         next ->
-          NewState = State#state{board
-           = NewBoard, next_chip = diff_chip(NextChip)},
+          NewState = State#state{board = NewBoard,
+                     next_chip = diff_chip(NextChip)},
           {next, NewState};
         won -> won;
         drawn -> drawn

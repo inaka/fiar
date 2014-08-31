@@ -24,7 +24,8 @@
 %%    </ul>
 %%
 %%    == Problem Statement ==
-%%    Create fiar_sup, a simple_one_for_one supervisor that will monitor matches.
+%%    Create fiar_sup, a simple_one_for_one supervisor
+%%    that will monitor matches.
 %%    <dl>
 %%    <dt>start_link() -> {ok, pid()}.</dt>
 %%    <dt>start_match() -> {ok, pid()}.</dt>
@@ -43,20 +44,20 @@ all() -> [Fun || {Fun, 1} <- module_info(exports), Fun =/= module_info].
 
 -spec start(config()) -> {ok, pid()}.
 start(_Config) ->
-	fiar_sup:start_link().
+  fiar_sup:start_link().
 
 -spec new_child(config()) -> {ok, pid()}.
 new_child(_Config) ->
-	fiar_sup:start_link(),
-	fiar_sup:start_match().
+  fiar_sup:start_link(),
+  fiar_sup:start_match().
 
 -spec two_children(config()) -> ok.
 two_children(_Config) ->
-	fiar_sup:start_link(),
-	{ok, Ch1} = fiar_sup:start_match(),
-	{ok, Ch2} = fiar_sup:start_match(),
-	ok =
-		case Ch1 of
-			Ch2 -> iguales;
-			_ -> ok
-		end.
+  fiar_sup:start_link(),
+  {ok, Ch1} = fiar_sup:start_match(),
+  {ok, Ch2} = fiar_sup:start_match(),
+  ok =
+    case Ch1 of
+        Ch2 -> same;
+        _ -> ok
+    end.

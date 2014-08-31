@@ -10,16 +10,10 @@ start_link() ->
 
 init([]) ->
     {ok, {{simple_one_for_one, 10, 60},
-          [{fiar_match, 
-            {fiar_match, start, []},
-           	permanent, 
-           	5000,
-           	worker, 
-           	[fiar_match]
-           }
-          ]
-         }
+          [{fiar_match, {fiar_match, start, []},
+           	permanent, 5000, worker, [fiar_match]}]
+        }
     }.
 
 start_match() ->
-	supervisor:start_child(?MODULE, []).
+  supervisor:start_child(?MODULE, []).

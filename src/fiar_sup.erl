@@ -9,11 +9,11 @@ start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
-    {ok, {{simple_one_for_one, 10, 60},
-          [{fiar_match, {fiar_match, start, []},
-           	permanent, 5000, worker, [fiar_match]}]
-        }
-    }.
+  {ok, {{simple_one_for_one, 10, 60},
+    [{fiar_match, {fiar_match, start, []},
+    permanent, 5000, worker, [fiar_match]}]
+    }
+  }.
 
 start_match() ->
   supervisor:start_child(?MODULE, []).

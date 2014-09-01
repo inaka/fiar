@@ -1,27 +1,14 @@
 -module(fiar_core).
-
+-author('euen@inakanetworks.net').
 -export([start/0, play/2]).
-
--type chip() :: 1|2.
-
--type column() :: [chip()].
-
--type board() ::
-  {column(), column(), column(), column(), column(), column(), column()}.
-
--type col() :: 1..7.
-
--record(state, {board::board(), next_chip = 1 :: chip()}).
-
+-record(state, {board::fiar:board(), next_chip = 1 :: fiar:chip()}).
 -type state() :: #state{}.
 
- -export_type([chip/0, board/0, col/0]).
-
--spec start() -> state().
+-spec start() -> fiar:state().
 start()  -> 
   #state{board = {[], [], [], [], [], [], []}}.
 
--spec play(col(), state()) -> won | drawn | {next, state()}.
+-spec play(fiar:col(), state()) -> won | drawn | {next, state()}.
 play(Col, _) when Col < 1 orelse Col > 7 ->
   throw(invalid_column);
 play(Col, State = #state{board = Board, next_chip = NextChip}) ->

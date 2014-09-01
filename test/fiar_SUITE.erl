@@ -21,43 +21,55 @@
 %%    <li>Pattern Matching</li>
 %%    <li>Gen Server</li>
 %%    <li>Supervisor</li>
+%%    <li>Application module</li>
 %%    </ul>
 %%
 %%    == Problem Statement ==
-%%    Create fiar_sup, a simple_one_for_one supervisor
-%%    that will monitor matches.
+%%    All calls into the system should go through the fiar module
+%%    including but not limited to:
 %%    <dl>
-%%    <dt>start_link() -> {ok, pid()}.</dt>
-%%    <dt>start_match() -> {ok, pid()}.</dt>
+%%    <dt>start() -> ok.</dt>
+%%    <dt>stop() -> ok.</dt>
+%%    <dt>start_match() -> ok.</dt>
+%%    <dt>stop_match() -> ok.</dt>
 %%    </dl>
 
--module(fiar_sup_SUITE).
+-module (fiar_SUITE).
 -author('euen@inakanetworks.net').
 
 -type config() :: [{atom(), term()}].
--export([all/0]).
--export([start/1, new_child/1, two_children/1]).
+-export([all/0, start/1, stop/1, start_match/1,
+        stop_match/1]).
+
+init_per_testcase(stop, Config) ->
+  {ok, Pid} = fiar:start(normal, []),
+  [{pid, Pid} | Config].
 
 %% @private
 -spec all() -> [atom()].
 all() -> [Fun || {Fun, 1} <- module_info(exports), Fun =/= module_info].
 
--spec start(config()) -> {ok, pid()}.
+-spec start(config()) -> ok.
 start(_Config) ->
-  fiar_sup:start_link().
+  {ok, _} = fiar:start(normal, []),
+  ok.
 
--spec new_child(config()) -> {ok, pid()}.
-new_child(_Config) ->
-  fiar_sup:start_link(),
-  fiar_sup:start_match().
+-spec stop(config()) -> ok.
+stop(_Config) ->
+  ok = fiar:stop([]),
+  ok.
 
--spec two_children(config()) -> ok.
-two_children(_Config) ->
-  fiar_sup:start_link(),
-  {ok, Ch1} = fiar_sup:start_match(),
-  {ok, Ch2} = fiar_sup:start_match(),
-  ok =
-    case Ch1 of
-        Ch2 -> same;
-        _ -> ok
-    end.
+-spec start_match(config()) -> ok.
+start_match(_Config) ->
+  fiar:start(normal, []),
+  Pid = fiar:start_match(),
+ case fiar:play(Pid, 1) of
+   next -> ok;
+   Error -> error = Error 
+ end.  
+
+-spec stop_match(config()) -> ok.
+stop_match(Config) ->
+  Pid = proplists:get_value(pid, Config),
+  ok = fiar:stop_match(Pid),
+  ok.

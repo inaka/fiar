@@ -1,4 +1,5 @@
 -module(fiar_match).
+-author('euen@inakanetworks.net').
 -export([start/0, play/2, stop/1]).
 
 -behaviour(gen_server).
@@ -9,16 +10,6 @@
          handle_info/2, 
          terminate/2, 
          code_change/3]).
-
--type from() :: {pid(), _}.
-
--type reason() :: normal | shutdown | {shutdown, term()} | term().
-
--type oldVsn() :: term() | {down, term()}.
-
--record(state, {board::fiar_core:board(), next_chip = 1 :: fiar_core:chip()}).
-
--type state() :: #state{}.
 
 -spec start() -> {ok, pid()}.
 start() ->
@@ -35,14 +26,14 @@ play(Pid, Col) ->
     {error, Ex} -> throw(Ex)
   end.
 
--spec init([]) -> {ok, state()}.
+-spec init([]) -> {ok, fiar:state()}.
 init([]) ->
     EmptyState = fiar_core:start(),
     {ok, EmptyState}.
 
--spec handle_call({play, fiar_core:col()}, from(), state()) ->
-                  {reply, {error, any()}, state()} | 
-                  {reply, {ok, won | drawn | next}, state()}.
+-spec handle_call({play, fiar_core:col()}, fiar:from(), fiar:state()) ->
+                  {reply, {error, any()}, fiar:state()} | 
+                  {reply, {ok, won | drawn | next}, fiar:state()}.
 handle_call({play, Col}, _From, State) ->
   try
     {Reply, NewState} =
@@ -56,8 +47,8 @@ handle_call({play, Col}, _From, State) ->
         {reply, {error, Ex}, State}
   end.
 
--spec handle_cast(shutdown | string(), state()) ->
-  {stop, normal, state()} | {noreply, state()}.
+-spec handle_cast(shutdown | string(), fiar:state()) ->
+  {stop, normal, fiar:state()} | {noreply, fiar:state()}.
 handle_cast(shutdown, State) ->
     io:format("Generic cast handler: *shutdown* while in '~p'~n",[State]),
     {stop, normal, State};
@@ -65,16 +56,16 @@ handle_cast(Message, State) ->
     io:format("Generic cast handler: '~p' while in '~p'~n",[Message, State]),
     {noreply, State}.
 
--spec handle_info(string(), state()) -> {noreply, state()}.
+-spec handle_info(string(), fiar:state()) -> {noreply, fiar:state()}.
 handle_info(Message, State) -> 
     io:format("Generic info handler: '~p' '~p'~n",[Message, State]),
     {noreply, State}.
 
--spec terminate(reason(), state()) -> ok.
+-spec terminate(fiar:reason(), fiar:state()) -> ok.
 terminate(_Reason, _State) -> 
     io:format("Generic termination handler: '~p' '~p'~n",[_Reason, _State]).
 
--spec code_change(oldVsn(), state(), term()) ->
-                  {ok | error, state() | reason()}.
+-spec code_change(fiar:oldVsn(), fiar:state(), term()) ->
+                  {ok | error, fiar:state() | fiar:reason()}.
 code_change(_OldVersion, State, _Extra) -> {ok, State}.
   

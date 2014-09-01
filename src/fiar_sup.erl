@@ -1,5 +1,5 @@
 -module (fiar_sup).
--author('euen@inaka.net').
+-author('euen@inakanetworks.net').
 -behaviour(supervisor).
 
 -export([init/1]).

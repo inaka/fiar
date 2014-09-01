@@ -3,6 +3,7 @@
  incl_mods,
  [
   fiar_core,
-  fiar_match
+  fiar_match,
+  fiar_sup
  ]
 }.

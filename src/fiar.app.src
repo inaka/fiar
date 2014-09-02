@@ -5,6 +5,7 @@
   {vsn, "0.1"},
   {applications, [kernel, stdlib]},
   {modules, []},
+  {mod, {fiar, []}},
   {registered, []}
  ]
 }.

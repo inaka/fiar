@@ -48,8 +48,7 @@ handle_call({play, Col}, _From, State = #state{match = Match}) ->
       end,
     {reply, {ok, Reply}, State#state{match = NewMatch}}
   catch
-    _:Ex -> io:format("~p~n", [erlang:get_stacktrace()]),
-        {reply, {error, Ex}, State}
+    _:Ex -> {reply, {error, Ex}, State}
   end.
 
 -spec handle_cast(shutdown | string(), state()) ->
@@ -73,4 +72,3 @@ terminate(_Reason, _State) ->
 -spec code_change(oldVsn(), state(), term()) ->
                   {ok | error, state() | reason()}.
 code_change(_OldVersion, State, _Extra) -> {ok, State}.
-  

@@ -39,7 +39,7 @@
 
 -type config() :: [{atom(), term()}].
 -export([all/0, start/1, stop/1, start_match/1,
-        stop_match/1]).
+         stop_match/1]).
 
 init_per_testcase(stop, Config) ->
   {ok, Pid} = fiar:start(normal, []),
@@ -51,11 +51,14 @@ all() -> [Fun || {Fun, 1} <- module_info(exports), Fun =/= module_info].
 
 -spec start(config()) -> ok.
 start(_Config) ->
-  ok = fiar:start().
+  ok = fiar:start(),
+  [fiar] = with_fiar(application:which_applications()),
+  ok.
 
 -spec stop(config()) -> ok.
 stop(_Config) ->
-  ok = fiar:stop(),
+  ok = fiar:stop(), timer:sleep(2000),
+  [] = with_fiar(application:which_applications()),
   ok.
 
 -spec start_match(config()) -> ok.
@@ -77,7 +80,5 @@ stop_match(Config) ->
     _:_ -> ok
   end.
 
-
-
-
-
+with_fiar(App) ->
+  [ A || {A, _, _} <- App, fiar == A ].

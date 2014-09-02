@@ -35,7 +35,7 @@
 %%    </dl>
 
 -module (fiar_SUITE).
--author('euen@inakanetworks.net').
+-author('euen@inakanetworks.com').
 
 -type config() :: [{atom(), term()}].
 -export([all/0, start/1, stop/1, start_match/1,
@@ -51,25 +51,33 @@ all() -> [Fun || {Fun, 1} <- module_info(exports), Fun =/= module_info].
 
 -spec start(config()) -> ok.
 start(_Config) ->
-  {ok, _} = fiar:start(normal, []),
-  ok.
+  ok = fiar:start().
 
 -spec stop(config()) -> ok.
 stop(_Config) ->
-  ok = fiar:stop([]),
+  ok = fiar:stop(),
   ok.
 
 -spec start_match(config()) -> ok.
 start_match(_Config) ->
   fiar:start(normal, []),
   Pid = fiar:start_match(),
- case fiar:play(Pid, 1) of
-   next -> ok;
-   Error -> error = Error 
- end.  
+  case fiar:play(Pid, 1) of
+    next -> ok;
+    Error -> unexpected_error = Error 
+  end.  
 
 -spec stop_match(config()) -> ok.
 stop_match(Config) ->
   Pid = proplists:get_value(pid, Config),
   ok = fiar:stop_match(Pid),
-  ok.
+  try fiar:play(Pid, 1) of
+    Result -> no_result = Result
+  catch
+    _:_ -> ok
+  end.
+
+
+
+
+

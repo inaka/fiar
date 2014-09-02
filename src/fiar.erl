@@ -1,26 +1,23 @@
 -module (fiar).
--author('euen@inakanetworks.net').
+-author('euen@inakanetworks.com').
 -behaviour(application).
 
--type chip() :: 1|2.
--type column() :: [chip()].
--type board() ::
-  {column(), column(), column(), column(), column(), column(), column()}.
--type col() :: 1..7.
--type from() :: {pid(), _}.
--type reason() :: normal | shutdown | {shutdown, term()} | term().
--type oldVsn() :: term() | {down, term()}.
 -type match() :: pid().
--export_type([chip/0, board/0, col/0]).
--export_type([from/0, reason/0, oldVsn/0]).
 
-
--export([start/2, stop/1, start_match/0,
+-export([start/0, stop/0, start/2, stop/1, start_match/0,
         play/2, stop_match/1]).
 
--spec start(atom(), any()) -> ok.
+-spec start() -> ok | {error, term()}.
+start() ->
+  application:start(fiar).
+
+-spec start(atom(), any()) -> {ok, pid()} | {error, any()}.
 start(normal, _Args) ->
     fiar_sup:start_link().
+
+ -spec stop() -> ok | {error, term()}.
+stop() ->
+  stop(fiar).
 
 -spec stop(_) -> ok.
 stop(_State) ->

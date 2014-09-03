@@ -1,4 +1,4 @@
-![](http://en.wikipedia.org/wiki/Connect_Four#mediaviewer/File:Connect_Four.gif)
+![](http://upload.wikimedia.org/wikipedia/commons/a/ad/Connect_Four.gif)
 
 # fiar
 

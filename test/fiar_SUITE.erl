@@ -52,13 +52,13 @@ all() -> [Fun || {Fun, 1} <- module_info(exports), Fun =/= module_info].
 -spec start(config()) -> ok.
 start(_Config) ->
   ok = fiar:start(),
-  [fiar] = with_fiar(application:which_applications()),
+  [fiar] = fiar_app(),
   ok.
 
 -spec stop(config()) -> ok.
 stop(_Config) ->
   ok = fiar:stop(), timer:sleep(2000),
-  [] = with_fiar(application:which_applications()),
+  [] = fiar_app(),
   ok.
 
 -spec start_match(config()) -> ok.
@@ -80,5 +80,5 @@ stop_match(Config) ->
     _:_ -> ok
   end.
 
-with_fiar(App) ->
-  [ A || {A, _, _} <- App, fiar == A ].
+fiar_app() ->
+  [fiar || {fiar, _, _} <- application:which_applications()].

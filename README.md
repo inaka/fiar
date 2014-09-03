@@ -1,4 +1,4 @@
-![](http://s2.playpickle.com/assets/four-in-a-row_704x451.jpg)
+![](http://en.wikipedia.org/wiki/Connect_Four#mediaviewer/File:Connect_Four.gif)
 
 # fiar
 
@@ -14,13 +14,13 @@ http://en.wikipedia.org/wiki/Connect_Four
 
 This is a project oriented to learning the erlang language, in fiar will find topics such as:
 
-- Modules and functions
-- List functions
+- [Modules][modules] and functions
+- [List][lists] functions
 - Basic Erlang Structures
-- Pattern Matching
-- gen_server
-- Supervisor estructure
-- Application Module
+- [Pattern Matching][pattern_matching]
+- [gen_server][gen_server]
+- [Supervisor][supervisor] estructure
+- [Application][application] Module
 - Data persistence whith [sumo_db][sumo_db]
 - Basic RESTful API
 - Authentication
@@ -28,15 +28,15 @@ This is a project oriented to learning the erlang language, in fiar will find to
 
 ## Stages of the project
 
-For a procedural learning, fiar is divided into small and separate issues, grouped by iterations.
+For a procedural learning, fiar is divided into small and separate issues, grouped by [iterations][iter].
 
-- Iteration 1: implement the initial setup, known the basic estructure of an erlang application, fiar_core with the logic of the game, test it, fiar_match as a process (gen_server) and supervisor with the `simple_one_for_one` strategy.
+- [Iteration 1][iter1]: implement the initial setup, known the basic estructure of an erlang application, fiar_core with the logic of the game, test it, fiar_match as a process (gen_server) and supervisor with the `simple_one_for_one` strategy.
 
-- Iteracion 2: create the fiar application module, README.md and conecting to MySQL with sumo_db.
+- [Iteracion 2][iter2]: create the fiar application module, README.md and conecting to MySQL with sumo_db.
 
-- Iteration 3: Provide a RESTful API to let users play, adding a basic authentication.
+- [Iteration 3][iter3]: Provide a RESTful API to let users play, adding a basic authentication.
 
-- Iteration 4: Add SSE support and create a basic website with standard SSE support to let users play the game using already existing RESTful API.
+- [Iteration 4][iter4]: Add SSE support and create a basic website with standard SSE support to let users play the game using already existing RESTful API.
 
 ## How to use
 
@@ -94,7 +94,23 @@ Every module has your own test file created with [Common Test][common_test] and 
 make devtests
 ```
 
+## Documentation
+
+- erlang.org  http://www.erlang.org/doc.html
+- learn you some erlang  http://learnyousomeerlang.com/contents
+- Api  http://erldocs.com/
 
 
+  [modules]: http://learnyousomeerlang.com/modules#what-are-modules
+  [lists]: http://learnyousomeerlang.com/starting-out-for-real#lists
+  [pattern_matching]: http://learnyousomeerlang.com/syntax-in-functions#pattern-matching
+  [gen_server]: http://www.erlang.org/doc/man/gen_server.html
+  [supervisor]: http://www.erlang.org/doc/man/supervisor.html
+  [application]: http://www.erlang.org/doc/apps/kernel/application.html
+  [iter]: https://github.com/inaka/fiar/milestones
+  [iter1]: https://github.com/inaka/fiar/issues?q=milestone%3A%22Iteration+%231%22
+  [iter2]: https://github.com/inaka/fiar/issues?q=milestone%3A%22Iteration+%232%22+is%3Aclosed
+  [iter3]: https://github.com/inaka/fiar/issues?q=milestone%3A%22Iteration+%233%22+is%3Aclosed
+  [iter4]: https://github.com/inaka/fiar/issues?q=milestone%3A%22Iteration+%234%22+is%3Aclosed
   [sumo_db]: https://github.com/inaka/sumo_db
   [common_test]: http://www.erlang.org/doc/apps/common_test/basics_chapter.html

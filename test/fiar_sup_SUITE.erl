@@ -32,7 +32,7 @@
 %%    </dl>
 
 -module(fiar_sup_SUITE).
--author('euen@inaka.net').
+-author('euen@inakanetworks.com').
 
 -type config() :: [{atom(), term()}].
 -export([all/0]).

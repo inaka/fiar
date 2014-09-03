@@ -1,30 +1,26 @@
 -module(fiar_core).
-
--export([start/0, play/2]).
+-author('euen@inakanetworks.com').
 
 -type chip() :: 1|2.
-
 -type column() :: [chip()].
-
 -type board() ::
   {column(), column(), column(), column(), column(), column(), column()}.
-
 -type col() :: 1..7.
 
--record(state, {board::board(), next_chip = 1 :: chip()}).
+-record(match, {board::board(), next_chip = 1 :: chip()}).
+-opaque match() :: #match{}.
 
--type state() :: #state{}.
+-export_type([chip/0, board/0, col/0, match/0]).
+-export([start/0, play/2]).
 
- -export_type([chip/0, board/0, col/0]).
-
--spec start() -> state().
+-spec start() -> match().
 start()  -> 
-  #state{board = {[], [], [], [], [], [], []}}.
+  #match{board = {[], [], [], [], [], [], []}}.
 
--spec play(col(), state()) -> won | drawn | {next, state()}.
+-spec play(col(), match()) -> won | drawn | {next, match()}.
 play(Col, _) when Col < 1 orelse Col > 7 ->
   throw(invalid_column);
-play(Col, State = #state{board = Board, next_chip = NextChip}) ->
+play(Col, Match = #match{board = Board, next_chip = NextChip}) ->
   Column = element(Col, Board),
   case Column of
     [_, _, _, _, _, _, _] -> throw(invalid_column);
@@ -34,9 +30,9 @@ play(Col, State = #state{board = Board, next_chip = NextChip}) ->
       NewBoard = setelement(Col, Board, NewColumn),
       case analyze(Col, NewColumn, NextChip, NewBoard) of
         next ->
-          NewState = State#state{board = NewBoard,
+          NewMatch = Match#match{board = NewBoard,
                      next_chip = diff_chip(NextChip)},
-          {next, NewState};
+          {next, NewMatch};
         won -> won;
         drawn -> drawn
       end

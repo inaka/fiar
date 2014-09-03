@@ -1,24 +1,20 @@
 -module(fiar_match).
--export([start/0, play/2, stop/1]).
-
+-author('euen@inakanetworks.com').
 -behaviour(gen_server).
-    
+
+-type from() :: {pid(), _}.
+-type reason() :: normal | shutdown | {shutdown, term()} | term().
+-type oldVsn() :: term() | {down, term()}.
+-record(state, {match::fiar_core:match()}).
+-type state() :: #state{}.
+
 -export([init/1,
          handle_call/3, 
          handle_cast/2,
          handle_info/2, 
          terminate/2, 
          code_change/3]).
-
--type from() :: {pid(), _}.
-
--type reason() :: normal | shutdown | {shutdown, term()} | term().
-
--type oldVsn() :: term() | {down, term()}.
-
--record(state, {board::fiar_core:board(), next_chip = 1 :: fiar_core:chip()}).
-
--type state() :: #state{}.
+-export([start/0, play/2, stop/1]).
 
 -spec start() -> {ok, pid()}.
 start() ->
@@ -37,23 +33,22 @@ play(Pid, Col) ->
 
 -spec init([]) -> {ok, state()}.
 init([]) ->
-    EmptyState = fiar_core:start(),
-    {ok, EmptyState}.
+    EmptyMatch = fiar_core:start(),
+    {ok, #state{match = EmptyMatch}}.
 
 -spec handle_call({play, fiar_core:col()}, from(), state()) ->
                   {reply, {error, any()}, state()} | 
                   {reply, {ok, won | drawn | next}, state()}.
-handle_call({play, Col}, _From, State) ->
+handle_call({play, Col}, _From, State = #state{match = Match}) ->
   try
-    {Reply, NewState} =
-      case fiar_core:play(Col, State) of
-        {Result, NextState} -> {Result, NextState};
-        Result -> {Result, State}
+    {Reply, NewMatch} =
+      case fiar_core:play(Col, Match) of
+        {Result, NextMatch} -> {Result, NextMatch};
+        Result -> {Result, Match}
       end,
-    {reply, {ok, Reply}, NewState}
+    {reply, {ok, Reply}, State#state{match = NewMatch}}
   catch
-    _:Ex ->
-        {reply, {error, Ex}, State}
+    _:Ex -> {reply, {error, Ex}, State}
   end.
 
 -spec handle_cast(shutdown | string(), state()) ->
@@ -77,4 +72,3 @@ terminate(_Reason, _State) ->
 -spec code_change(oldVsn(), state(), term()) ->
                   {ok | error, state() | reason()}.
 code_change(_OldVersion, State, _Extra) -> {ok, State}.
-  

@@ -4,6 +4,7 @@
  [
   fiar_core,
   fiar_match,
-  fiar_sup
+  fiar_sup,
+  fiar
  ]
 }.

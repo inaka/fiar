@@ -12,7 +12,7 @@ http://en.wikipedia.org/wiki/Connect_Four
 
 ## Purpose
 
-This is a project oriented to learning the erlang language, in fiar will find topics such as:
+This is a project oriented to learning the erlang language, in fiar you will find topics such as:
 
 - [Modules][modules] and functions
 - [List][lists] functions
@@ -30,7 +30,7 @@ This is a project oriented to learning the erlang language, in fiar will find to
 
 For a procedural learning, fiar is divided into small and separate issues, grouped by [iterations][iter].
 
-- [Iteration 1][iter1]: implement the initial setup, known the basic estructure of an erlang application, fiar_core with the logic of the game, test it, fiar_match as a process (gen_server) and supervisor with the `simple_one_for_one` strategy.
+- [Iteration 1][iter1]: learn the basic estructure of an erlang application, tests, process as a gen_server, and supervisor with the `simple_one_for_one` strategy.
 
 - [Iteracion 2][iter2]: create the fiar application module, README.md and conecting to MySQL with sumo_db.
 
@@ -53,7 +53,7 @@ fiar:play(Match, Col).
 next
 ```
 
-play is called to make a move, and it is expected to return the `won` when the player won, `drawn` when de board is full and no wins, and `next` when is the next player's turn.
+play is called to make a move, and it is expected to return the atom `won` when the player won, `drawn` when de board is full and none won, and `next` when it is the next player's turn.
 
 #### Example to vertically won:
 
@@ -88,7 +88,7 @@ won
 
 ## Run tests
 
-Every module has your own test file created with [Common Test][common_test] and you can run with:
+Every module has its your own test file created with [Common Test][common_test] And you can run the whole suite with:
 
 ```bash
 make devtests

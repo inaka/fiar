@@ -38,6 +38,10 @@ play(Col, Match = #match{board = Board, next_chip = NextChip}) ->
       end
   end.
 
+-spec get_current_chip(match()) -> chip().
+get_current_chip(Match) ->
+  Match#match.next_chip.
+
 diff_chip(1) -> 2;
 diff_chip(2) -> 1.
 

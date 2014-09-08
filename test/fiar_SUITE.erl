@@ -54,12 +54,12 @@ init_per_testcase(start, Config) ->
   Config;
 init_per_testcase(two_matches, Config) ->
   ok = fiar:start(),
-  Match1 = fiar:start_match("Brujo", "Euen"),
-  Match2 = fiar:start_match("Fede", "Juan"),
+  Match1 = fiar:start_match(<<"Brujo">>, <<"Euen">>),
+  Match2 = fiar:start_match(<<"Fede">>, <<"Juan">>),
   [{match1, Match1}, {match2, Match2} | Config];
 init_per_testcase(_, Config) ->
   ok = fiar:start(),
-  Match1 = fiar:start_match("Brujo", "Euen"),
+  Match1 = fiar:start_match(<<"Brujo">>, <<"Euen">>),
   [{match1, Match1} | Config].
 
 end_per_testcase(stop, Config) ->
@@ -76,7 +76,8 @@ start(_Config) ->
 
 -spec stop(config()) -> ok.
 stop(_Config) ->
-  ok = fiar:stop(), timer:sleep(2000),
+  ok = fiar:stop(),
+  timer:sleep(2000),
   [] = fiar_app(),
   ok.
 
@@ -100,7 +101,7 @@ invalid(Config) ->
   try fiar:play(Match1, 1) of
     Result -> no_result = Result
   catch
-    invalid_column -> invalid_column
+    {error, invalid_column} -> invalid_column
   end,
   ok.
 
@@ -119,7 +120,7 @@ wins_vertically(Config) ->
   Match1 = proplists:get_value(match1, Config),
   drop_chips([1, 2, 1, 2, 1, 2], Match1),
   won = fiar:play(Match1, 1),
-  {won_by, "Brujo"} = fiar:match_status(Match1),
+  {won_by, <<"Brujo">>} = fiar:match_status(Match1),
   ok.
 
 % %% @doc when the player puts 4 chips in a horizontal row, wins
@@ -149,7 +150,6 @@ wins_left_diagonally(Config) ->
  {won_by, _} = fiar:match_status(Match1),
  ok.
 
-
 %% @doc test run two matches simultaneously
 -spec two_matches(config()) -> ok.
 two_matches(Config) ->
@@ -167,15 +167,15 @@ two_matches(Config) ->
   
 match_status(Config) ->
   Match1 = proplists:get_value(match1, Config),
-  {next_player, "Brujo"} = fiar:match_status(Match1),
+  {next_player, <<"Brujo">>} = fiar:match_status(Match1),
   ok = fiar:stop(),
   ok = fiar:start(),
-  {next_player, "Brujo"} = fiar:match_status(Match1),
+  {next_player, <<"Brujo">>} = fiar:match_status(Match1),
   next = fiar:play(Match1, 5),
-  {next_player, "Euen"} = fiar:match_status(Match1),
+  {next_player, <<"Euen">>} = fiar:match_status(Match1),
   ok = fiar:stop(),
   ok = fiar:start(),
-  {next_player, "Euen"} = fiar:match_status(Match1),
+  {next_player, <<"Euen">>} = fiar:match_status(Match1),
   ok.
 
 %% @private

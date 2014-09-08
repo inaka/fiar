@@ -11,7 +11,7 @@
 -opaque match() :: #match{}.
 
 -export_type([chip/0, board/0, col/0, match/0]).
--export([start/0, play/2]).
+-export([start/0, play/2, get_current_chip/1]).
 
 -spec start() -> match().
 start()  -> 

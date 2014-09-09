@@ -42,7 +42,9 @@ start_match(Player1, Player2) ->
 
 -spec play(match(), fiar_core:col()) -> won | drawn | next.
 play(Mid, Col) ->
-  fiar_match_repo:play(Mid, Col).
+  Result = fiar_match_repo:play(Mid, Col),
+  lager:info("result: ~p", [Result]),
+  Result.
 
 -spec match_status(match()) -> status().
 match_status(Match) ->

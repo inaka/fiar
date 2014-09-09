@@ -45,7 +45,7 @@ sumo_sleep(Match) ->
   ].
 
 sumo_wakeup(Match) ->
-  [ {id,     proplists:get_value(id, Match)}
+  [ {id,          proplists:get_value(id, Match)}
   , {player1,     proplists:get_value(player1, Match)}
   , {player2,     proplists:get_value(player2, Match)}
   , {status,      binary_to_atom(proplists:get_value(status, Match), utf8)}

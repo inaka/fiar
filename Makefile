@@ -1,6 +1,6 @@
 PROJECT = fiar
 
-DEPS = sumo_db lager eper sync
+DEPS = sumo_db lager eper sync cowboy
 
 dep_sumo_db = git https://github.com/inaka/sumo_db.git 0.1.2
 dep_sync = git https://github.com/rustyio/sync.git master

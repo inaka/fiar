@@ -9,6 +9,7 @@
 
 start(Player1, Player2) ->
   Match = fiar_match:new(Player1, Player2),
+  lager:info("Match Previous to save: ~p", [Match]),
   StoredMatch = sumo:persist(fiar_match, Match),
   fiar_match:get_id(StoredMatch).
 

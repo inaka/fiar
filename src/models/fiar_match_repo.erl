@@ -5,7 +5,7 @@
                 | {next_player, fiar_match:player()}.
 -export_type([status/0]).
 
--export([start/2, get_match/1, play/2, status/1]).
+-export([start/2, get_match/1, play/2, status/1, get_matches/0]).
 
 start(Player1, Player2) ->
   Match = fiar_match:new(Player1, Player2),
@@ -59,9 +59,11 @@ new_status(won, State) ->
   end;
 new_status(drawn, _State) -> drawn.
 
-
 get_match(Mid) ->
   case sumo:find(fiar_match, Mid) of
     notfound -> throw({notfound, Mid});
     M -> M
   end.
+
+get_matches() ->
+  sumo:find_all(fiar_match).

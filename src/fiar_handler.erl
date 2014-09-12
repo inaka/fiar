@@ -36,23 +36,22 @@ is_authorized(Req, State) ->
   {true, Req, State}.
 
 handle_get(Req, State) ->
-  {ok, Mid, Req1} = cowboy_req:body(Req),
-  Body = jiffy:encode(#{ status => fiar:match_status(Mid)}),
-  {Body, Req1, State}.
+  Matches = fiar_match_repo:get_matches(),
+  MatchJson = fiar_match:match_list_to_json(Matches),
+  RespBody = jiffy:encode(MatchJson),
+  {RespBody, Req, State}.
 
 handle_post(Req, State) ->
   {ok, Body, Req1} =  cowboy_req:body(Req),
   Decoded = jiffy:decode(Body, [return_maps]),
-  io:format("Players: ~p", [Decoded]),
 
   Player1 = maps:get(<<"player1">>, Decoded),
   Player2 = maps:get(<<"player2">>, Decoded),
 
   Mid = fiar:start_match(Player1, Player2),
-  io:format("Match started: ~p~n", [Mid]),
   Match = fiar_match_repo:get_match(Mid),
-  io:format("Matchlll: ~p~n", [Match]),
-  RespBody = fiar_match:to_json(Match),
+  MatchJson = fiar_match:to_json(Match),
+  RespBody = jiffy:encode(MatchJson),
   Req2 = cowboy_req:set_resp_body(RespBody, Req1),
 
   {true, Req2, State}.

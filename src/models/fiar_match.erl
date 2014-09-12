@@ -17,6 +17,7 @@
   , set_state/2
   , set_updated_at/1
   , to_json/1
+  , match_list_to_json/1
   ]).
 %%% Behaviour callbacks.
 -export([sumo_schema/0, sumo_wakeup/1, sumo_sleep/1]).
@@ -92,13 +93,16 @@ set_state(Match, State) -> [{state, State} | Match].
 
 set_updated_at(Match) -> [{datetime, calendar:universal_time()} | Match].
 
+match_list_to_json(Matches) ->
+  lists:map(fun to_json/1, Matches).
+
 to_json(Match) ->
-  MatchJson = { [to_json_attr(K, V) || {K, V} <- Match] },
-  jiffy:encode(MatchJson).
+  { [to_json_attr(K, V) || {K, V} <- Match] }.
 
 to_json_attr(status, Atom) -> {status, atom_to_binary(Atom, utf8)};
 to_json_attr(K, {datetime, DT}) -> {K, datetime_to_json(DT)};
 to_json_attr(state, BoardState) -> {state, fiar_core:to_json(BoardState)};
+to_json_attr(K, V) when is_list(V) -> {K, list_to_binary(V)};
 to_json_attr(K, V) -> {K, V}.
 
 -spec datetime_to_json(choosy_utils:datetime()) ->

@@ -56,7 +56,8 @@ start(normal, _Args) ->
 
 start_cowboy_listeners() ->
   Dispatch = cowboy_router:compile([
-    {'_', [{"/matches", fiar_handler, []}]}
+    {'_', [{"/matches", fiar_matches_handler, []},
+           {"/matches/:match_id", fiar_single_match_handler, []}]}
   ]),
   cowboy:start_http(fiar_http_listener, 100, [{port, 8080}],
     [{env, [{dispatch, Dispatch}]}]

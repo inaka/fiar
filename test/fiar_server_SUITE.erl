@@ -40,7 +40,7 @@
 -type config() :: [{atom(), term()}].
 -export([start/1]).
 -export([all/0, init_per_testcase/2, end_per_testcase/2]).
--export([get_matches/1]).
+-export([get_matches/1, get_status/1]).
 
 %% @private
 -spec all() -> [atom()].
@@ -61,13 +61,22 @@ start(_Config) ->
   Body = jiffy:encode(#{player1 => "Juan", player2 => "Fede"}),
   {ok, #{status_code := 200, body := _}} = api_call(post, "/matches", Headers, Body).
 
-%% @doc start returns an empty board
 -spec get_matches(config()) -> ok.
 get_matches(_Config) ->
   Headers = #{<<"content-type">> => <<"application/json">>},
   {ok, #{status_code := 200, body := RespBody}} = api_call(get, "/matches", Headers),
   true = is_list(jiffy:decode(RespBody)).
 
+get_status(_Config) ->
+  Headers = #{<<"content-type">> => <<"application/json">>},
+  PlayersBody = jiffy:encode(#{player1 => "Juan", player2 => "Fede"}),
+  {ok, #{status_code := 200, body := NewBody}} = api_call(post, "/matches", Headers, PlayersBody),
+  Mid = integer_to_list(maps:get(<<"id">>, jiffy:decode(NewBody, [return_maps]))),
+  ColBody = jiffy:encode(#{column => 7}),
+  {ok, #{status_code := 200, body := RespBody}} = api_call(get, "/matches/"++Mid, Headers, ColBody),
+  <<"on_course">> = maps:get(<<"status">>, jiffy:decode(RespBody, [return_maps])),
+  ok.
+ 
 api_call(Method, Url, Headers) ->
     api_call(Method, Url, Headers, "").
 

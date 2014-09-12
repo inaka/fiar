@@ -1,4 +1,4 @@
--module (fiar_handler).
+-module (fiar_matches_handler).
 
 -export(
  [

@@ -40,7 +40,7 @@
 -type config() :: [{atom(), term()}].
 -export([start/1]).
 -export([all/0, init_per_testcase/2, end_per_testcase/2]).
--export([get_matches/1, get_status/1, first_play/1]).
+-export([get_matches/1, get_status/1, first_play/1, play_bad_id/1]).
 
 %% @private
 -spec all() -> [atom()].
@@ -91,10 +91,21 @@ first_play(_Config) ->
   Mid = integer_to_list(maps:get(<<"id">>, BodyDecode)),
   MoveBody = jiffy:encode(#{column => 1}),
   {ok, #{status_code := 200, body := RespBody}} = 
-  api_call(put, "/matches/" ++ Mid, Headers, MoveBody),
+    api_call(put, "/matches/" ++ Mid, Headers, MoveBody),
   State = maps:get(<<"state">>, jiffy:decode(RespBody, [return_maps])),
   [[1]|_] = maps:get(<<"board">>, State),
   2 = maps:get(<<"next_chip">>, State),
+  ok.
+
+play_bad_id(_config) ->
+  Headers = #{<<"content-type">> => <<"application/json">>},
+  PlayersBody = jiffy:encode(#{player1 => "Juan", player2 => "Fede"}),
+  api_call(post, "/matches", Headers, PlayersBody),
+  MoveBody = jiffy:encode(#{column => 1}),
+  {ok, #{status_code := 400}} = 
+    api_call(put, "/matches/id", Headers, MoveBody),
+  {ok, #{status_code := 404}} = 
+    api_call(put, "/matches/2056356", Headers, MoveBody),
   ok.
  
 api_call(Method, Url, Headers) ->

@@ -42,13 +42,24 @@ handle_get(Req, State) ->
   RespBody = jiffy:encode(MatchJson),
   {RespBody, Req1, State}.
 
- handle_put(Req, State) ->
+handle_put(Req, State) ->
   {MatchId, Req1} =  cowboy_req:binding(match_id, Req),
-  {ok, Body, Req2} =  cowboy_req:body(Req1),
-  Col = maps:get(<<"column">>, jiffy:decode(Body, [return_maps])),
-  fiar:play(MatchId, Col),
-  Match = fiar_match_repo:get_match(MatchId),
-  MatchJson = fiar_match:to_json(Match),
-  RespBody = jiffy:encode(MatchJson),
-  Req3 = cowboy_req:set_resp_body(RespBody, Req2),
-  {true, Req3, State}.
+  try 
+    binary_to_integer(MatchId, 10),
+    lager:info("Match id: ~p", [MatchId]),
+    {ok, Body, Req2} =  cowboy_req:body(Req1),
+    Col = maps:get(<<"column">>, jiffy:decode(Body, [return_maps])),
+    fiar:play(MatchId, Col),
+    Match = fiar_match_repo:get_match(MatchId),
+    MatchJson = fiar_match:to_json(Match),
+    RespBody = jiffy:encode(MatchJson),
+    Req3 = cowboy_req:set_resp_body(RespBody, Req2),
+    {true, Req3, State}
+  catch
+    throw:{notfound, Mid} ->
+            lager:info("Invalid ID: ~p~n", [Mid]),
+            fiar_utils:handle_exception(not_found, Req1, State);
+    _:Exception ->
+            lager:info("Exception in PUT: ~p~n", [Exception]),
+            fiar_utils:handle_exception(Exception, Req1, State)
+  end.

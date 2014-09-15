@@ -8,7 +8,8 @@
   content_types_accepted/2,
   content_types_provided/2,
   is_authorized/2,
-  handle_get/2
+  handle_get/2,
+  handle_put/2
  ]
 ).
 
@@ -24,7 +25,7 @@ allowed_methods(Req, State) ->
 
 content_types_accepted(Req, State) ->
   {[
-    {<<"application/json">>, handle_post}
+    {<<"application/json">>, handle_put}
    ],
    Req, State}.
 
@@ -40,3 +41,14 @@ handle_get(Req, State) ->
   MatchJson = fiar_match:to_json(Match),
   RespBody = jiffy:encode(MatchJson),
   {RespBody, Req1, State}.
+
+ handle_put(Req, State) ->
+  {MatchId, Req1} =  cowboy_req:binding(match_id, Req),
+  {ok, Body, Req2} =  cowboy_req:body(Req1),
+  Col = maps:get(<<"column">>, jiffy:decode(Body, [return_maps])),
+  fiar:play(MatchId, Col),
+  Match = fiar_match_repo:get_match(MatchId),
+  MatchJson = fiar_match:to_json(Match),
+  RespBody = jiffy:encode(MatchJson),
+  Req3 = cowboy_req:set_resp_body(RespBody, Req2),
+  {true, Req3, State}.

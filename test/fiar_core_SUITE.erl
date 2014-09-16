@@ -143,6 +143,3 @@ drop_chips([], Board) -> Board;
 drop_chips([Col|Rest], Board) ->
   {Col, Board, {next, NextBoard}} = {Col, Board, fiar_core:play(Col, Board)},
   drop_chips(Rest, NextBoard).
-
-
-

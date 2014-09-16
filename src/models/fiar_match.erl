@@ -102,7 +102,6 @@ to_json(Match) ->
 to_json_attr(status, Atom) -> {status, atom_to_binary(Atom, utf8)};
 to_json_attr(K, {datetime, DT}) -> {K, datetime_to_json(DT)};
 to_json_attr(state, BoardState) -> {state, fiar_core:to_json(BoardState)};
-to_json_attr(K, V) when is_list(V) -> {K, list_to_binary(V)};
 to_json_attr(K, V) -> {K, V}.
 
 -spec datetime_to_json(choosy_utils:datetime()) ->

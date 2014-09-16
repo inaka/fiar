@@ -5,6 +5,8 @@
   fiar_core,
   fiar_match,
   fiar_sup,
-  fiar
+  fiar,
+  fiar_matches_handler,
+  fiar_single_match_handler
  ]
 }.

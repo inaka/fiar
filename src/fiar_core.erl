@@ -11,7 +11,7 @@
 -opaque match() :: #match{}.
 
 -export_type([chip/0, board/0, col/0, match/0]).
--export([start/0, play/2, get_current_chip/1]).
+-export([start/0, play/2, get_current_chip/1, to_json/1]).
 
 -spec start() -> match().
 start()  -> 
@@ -141,3 +141,7 @@ is_full(Board) ->
           end
   end,
   lists:all(Fun, Columns).
+
+to_json(#match{board = BoardTuple, next_chip = Chip}) ->
+  Board = tuple_to_list(BoardTuple),
+  {[{<<"board">>, Board}, {<<"next_chip">>, Chip}]}. 

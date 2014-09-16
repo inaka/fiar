@@ -37,20 +37,19 @@ is_authorized(Req, State) ->
 
 handle_get(Req, State) ->
   {MatchId, Req1} =  cowboy_req:binding(match_id, Req),
-  Match = fiar_match_repo:get_match(MatchId),
+  Match = fiar:get_match(MatchId),
   MatchJson = fiar_match:to_json(Match),
   RespBody = jiffy:encode(MatchJson),
   {RespBody, Req1, State}.
 
 handle_put(Req, State) ->
-  {MatchId, Req1} =  cowboy_req:binding(match_id, Req),
+  {MatchIdBin, Req1} =  cowboy_req:binding(match_id, Req),
   try 
-    binary_to_integer(MatchId, 10),
-    lager:info("Match id: ~p", [MatchId]),
+    MatchId = binary_to_integer(MatchIdBin, 10),
     {ok, Body, Req2} =  cowboy_req:body(Req1),
     Col = maps:get(<<"column">>, jiffy:decode(Body, [return_maps])),
     fiar:play(MatchId, Col),
-    Match = fiar_match_repo:get_match(MatchId),
+    Match = fiar:get_match(MatchId),
     MatchJson = fiar_match:to_json(Match),
     RespBody = jiffy:encode(MatchJson),
     Req3 = cowboy_req:set_resp_body(RespBody, Req2),

@@ -36,22 +36,25 @@ is_authorized(Req, State) ->
   {true, Req, State}.
 
 handle_get(Req, State) ->
-  Matches = fiar_match_repo:get_matches(),
+  Matches = fiar:get_matches(),
   MatchJson = fiar_match:match_list_to_json(Matches),
   RespBody = jiffy:encode(MatchJson),
   {RespBody, Req, State}.
 
 handle_post(Req, State) ->
   {ok, Body, Req1} =  cowboy_req:body(Req),
-  Decoded = jiffy:decode(Body, [return_maps]),
-
-  Player1 = maps:get(<<"player1">>, Decoded),
-  Player2 = maps:get(<<"player2">>, Decoded),
-
-  Mid = fiar:start_match(Player1, Player2),
-  Match = fiar_match_repo:get_match(Mid),
-  MatchJson = fiar_match:to_json(Match),
-  RespBody = jiffy:encode(MatchJson),
-  Req2 = cowboy_req:set_resp_body(RespBody, Req1),
-
-  {true, Req2, State}.
+  try
+    Decoded = jiffy:decode(Body, [return_maps]),
+    Player1 = maps:get(<<"player1">>, Decoded),
+    Player2 = maps:get(<<"player2">>, Decoded),
+    Mid = fiar:start_match(Player1, Player2),
+    Match = fiar:get_match(Mid),
+    MatchJson = fiar_match:to_json(Match),
+    RespBody = jiffy:encode(MatchJson),
+    Req2 = cowboy_req:set_resp_body(RespBody, Req1),
+    {true, Req2, State}
+  catch
+    _:Exception ->
+      lager:info("Exception in POST: ~p~n", [Exception]),
+      fiar_utils:handle_exception(Exception, Req1, State)
+  end.

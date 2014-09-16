@@ -48,6 +48,7 @@
         , wins_horizontally/1
         , wins_right_diagonally/1
         , wins_left_diagonally/1
+        , start_without_players/1
         ]).
 
 %% @private
@@ -70,6 +71,10 @@ init_per_testcase(play_bad_id, Config) ->
   {ok, _} = application:ensure_all_started(shotgun),
   ok = fiar:start(),
   Config;
+init_per_testcase(start_without_players, Config) ->
+  {ok, _} = application:ensure_all_started(shotgun),
+  ok = fiar:start(),
+  Config;
 init_per_testcase(_, Config) ->
   {ok, _} = application:ensure_all_started(shotgun),
   ok = fiar:start(),
@@ -80,7 +85,6 @@ init_per_testcase(_, Config) ->
   BodyDecode = jiffy:decode(NewBody, [return_maps]),
   Mid = integer_to_list(maps:get(<<"id">>, BodyDecode)),
   [{mid, Mid}, {headers, Headers}| Config].
-
 
 end_per_testcase(_, Config) ->
   fiar:stop(),
@@ -137,6 +141,12 @@ play_bad_id(_config) ->
     api_call(put, "/matches/id", Headers, MoveBody),
   {ok, #{status_code := 404}} = 
     api_call(put, "/matches/2056356", Headers, MoveBody),
+  ok.
+
+start_without_players(_Config) ->
+  Headers = #{<<"content-type">> => <<"application/json">>},
+  {ok, #{status_code := 400}} =
+    api_call(post, "/matches", Headers, jiffy:encode(#{})),
   ok.
 
 %% @doc when the player puts 4 chips in a vertical row, wins

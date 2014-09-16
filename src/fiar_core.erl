@@ -143,5 +143,5 @@ is_full(Board) ->
   lists:all(Fun, Columns).
 
 to_json(#match{board = BoardTuple, next_chip = Chip}) ->
-  Board = [element(I, BoardTuple) || I <- lists:seq(1, tuple_size(BoardTuple))],
+  Board = tuple_to_list(BoardTuple),
   {[{<<"board">>, Board}, {<<"next_chip">>, Chip}]}. 

@@ -6,8 +6,16 @@
 -type player() :: fiar_match:player().
 -type status() :: fiar_match_repo:status().
 
--export([start/0, stop/0, start/2, stop/1, start_match/2,
-         play/2, match_status/1]).
+-export([ start/0
+        , stop/0
+        , start/2
+        , stop/1
+        , start_match/2
+        , play/2
+        , match_status/1
+        , get_match/1
+        , get_matches/0
+        ]).
 
 -spec start() -> ok | {error, term()}.
 start() ->
@@ -53,6 +61,12 @@ start(normal, _Args) ->
   {ok, Pid} = fiar_sup:start_link(),
   start_cowboy_listeners(),
   {ok, Pid}.
+
+get_match(MatchId) ->
+  fiar_match_repo:get_match(MatchId).
+
+get_matches() ->
+  fiar_match_repo:get_matches().
 
 start_cowboy_listeners() ->
   Dispatch = cowboy_router:compile([

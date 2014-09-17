@@ -1,11 +1,12 @@
 PROJECT = fiar
 
-DEPS = sumo_db lager eper sync cowboy jiffy shotgun
+DEPS = sumo_db lager eper sync cowboy jiffy shotgun katana
 
 dep_sumo_db = git https://github.com/inaka/sumo_db.git 0.1.2
 dep_sync = git https://github.com/rustyio/sync.git master
 dep_lager = git https://github.com/basho/lager.git 2.0.3
 dep_eper = git https://github.com/massemanet/eper.git 35636bc4de07bc803ea4fc9731fab005d0378c2b
+dep_katana = git https://github.com/inaka/erlang-katana master
 
 include erlang.mk
 

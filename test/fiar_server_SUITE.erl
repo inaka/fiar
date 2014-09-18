@@ -55,6 +55,7 @@
         , wins_left_diagonally/1
         , start_without_players/1
         , create_user/1
+        , unique_user/1
         ]).
 
 %% @private
@@ -70,6 +71,7 @@ groups() -> [{basic,
               , play_bad_id
               , start_without_players
               , create_user
+              , unique_user
               ]}
             ].
 
@@ -97,10 +99,20 @@ end_per_testcase(_, Config) ->
 -spec create_user(config()) -> ok.
 create_user(_Config) ->
   Headers = #{<<"content-type">> => <<"application/json">>},
-  Body = jiffy:encode(#{username => "Juan"}),
+  Name = ktn_random:generate(),
+  Body = jiffy:encode(#{username => Name}),
   {ok, #{status_code := 200}} =
     api_call(post, "/users", Headers, Body),
   ok.
+
+unique_user(_Config) ->
+  Headers = #{<<"content-type">> => <<"application/json">>},
+  Name = ktn_random:generate(),
+  Body = jiffy:encode(#{username => Name}),
+  {ok, #{status_code := 200}} =
+    api_call(post, "/users", Headers, Body),
+  {ok, #{status_code := 409}} =
+    api_call(post, "/users", Headers, Body).
 
 -spec start(config()) -> ok.
 start(_Config) ->

@@ -58,7 +58,7 @@ start_match(Player1, Player2) ->
 
 -spec new_user(username()) -> user().
 new_user(Username) ->
-  fiar_user_repo:start(Username).
+  fiar_user_repo:create(Username).
 
 -spec get_user(username()) -> user().
 get_user(Uid) ->

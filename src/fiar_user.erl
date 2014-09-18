@@ -23,9 +23,17 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sumo_schema() ->
   sumo:new_schema(?MODULE,
-    [ sumo:new_field(id,            integer,      [id, not_null, auto_increment])
-    , sumo:new_field(username,      string,       [{length, 255}, not_null])
-    , sumo:new_field(key,           string,       [{length, 255}, not_null])
+    [ sumo:new_field(id,            integer,      [ id
+                                                  , not_null
+                                                  , auto_increment
+                                                  ])
+    , sumo:new_field(username,      string,       [ {length, 255}
+                                                  , not_null
+                                                  , unique
+                                                  ])
+    , sumo:new_field(key,           string,       [ {length, 255}
+                                                  , not_null
+                                                  ])
     , sumo:new_field(created_at,    datetime,     [not_null])
     , sumo:new_field(updated_at,    datetime,     [not_null])
     ]).

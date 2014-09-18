@@ -1,12 +1,20 @@
 -module (fiar_user_repo).
 
--export([start/1, get_user/1, get_users/0]).
+-export([ create/1
+        , get_user/1
+        , get_users/0
+        ]).
 
-start(Username) ->
-  User = fiar_user:new(Username),
-  lager:info("User previous to save: ~p", [User]),
-  StoredUser = sumo:persist(fiar_user, User),
-  fiar_user:get_id(StoredUser).
+create(Username) ->
+  case find_by_username(Username) of
+    [User|_] ->
+          throw(conflict);
+    [] -> 
+          NewUser = fiar_user:new(Username),
+          lager:info("User previous to save: ~p", [NewUser]),
+          StoredUser = sumo:persist(fiar_user, NewUser),
+          fiar_user:get_id(StoredUser)
+  end.
 
 get_user(Uid) ->
   case sumo:find(fiar_user, Uid) of
@@ -16,3 +24,6 @@ get_user(Uid) ->
 
 get_users() ->
   sumo:find_all(fiar_user).
+
+find_by_username(Username) ->
+  sumo:find_by(fiar_user, [{username, Username}]).

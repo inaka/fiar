@@ -39,7 +39,12 @@
 
 -type config() :: [{atom(), term()}].
 -export([start/1]).
--export([all/0, init_per_testcase/2, end_per_testcase/2]).
+-export([ all/0
+        , init_per_testcase/2
+        , end_per_testcase/2
+        , groups/0
+        ]).
+
 -export([ get_matches/1
         , get_status/1
         , first_play/1
@@ -56,30 +61,23 @@
 -spec all() -> [atom()].
 all() -> [Fun || {Fun, 1} <- module_info(exports), Fun =/= module_info].
 
-init_per_testcase(get_matches, Config) ->
+groups() -> [{basic,
+              [],
+              [ start
+              , get_matches
+              , get_status
+              , first_play
+              , play_bad_id
+              , start_without_players
+              , create_user
+              ]}
+            ].
+
+init_per_group(basic, Config) ->
   {ok, _} = application:ensure_all_started(shotgun),
   ok = fiar:start(),
-  Config;
-init_per_testcase(get_status, Config) ->
-  {ok, _} = application:ensure_all_started(shotgun),
-  ok = fiar:start(),
-  Config;
-init_per_testcase(first_play, Config) ->
-  {ok, _} = application:ensure_all_started(shotgun),
-  ok = fiar:start(),
-  Config;
-init_per_testcase(play_bad_id, Config) ->
-  {ok, _} = application:ensure_all_started(shotgun),
-  ok = fiar:start(),
-  Config;
-init_per_testcase(start_without_players, Config) ->
-  {ok, _} = application:ensure_all_started(shotgun),
-  ok = fiar:start(),
-  Config;
-init_per_testcase(create_user, Config) ->
-  {ok, _} = application:ensure_all_started(shotgun),
-  ok = fiar:start(),
-  Config;
+  Config.
+
 init_per_testcase(_, Config) ->
   {ok, _} = application:ensure_all_started(shotgun),
   ok = fiar:start(),

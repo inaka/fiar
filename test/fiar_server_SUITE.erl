@@ -49,6 +49,7 @@
         , wins_right_diagonally/1
         , wins_left_diagonally/1
         , start_without_players/1
+        , create_user/1
         ]).
 
 %% @private
@@ -75,6 +76,10 @@ init_per_testcase(start_without_players, Config) ->
   {ok, _} = application:ensure_all_started(shotgun),
   ok = fiar:start(),
   Config;
+init_per_testcase(create_user, Config) ->
+  {ok, _} = application:ensure_all_started(shotgun),
+  ok = fiar:start(),
+  Config;
 init_per_testcase(_, Config) ->
   {ok, _} = application:ensure_all_started(shotgun),
   ok = fiar:start(),
@@ -90,6 +95,15 @@ end_per_testcase(_, Config) ->
   fiar:stop(),
   Config.
 
+%basic_auth => {"User", Pass}}
+-spec create_user(config()) -> ok.
+create_user(_Config) ->
+  Headers = #{<<"content-type">> => <<"application/json">>},
+  Body = jiffy:encode(#{username => "Juan"}),
+  {ok, #{status_code := 200}} =
+    api_call(post, "/users", Headers, Body),
+  ok.
+
 -spec start(config()) -> ok.
 start(_Config) ->
   Headers = #{<<"content-type">> => <<"application/json">>},
@@ -104,6 +118,7 @@ get_matches(_Config) ->
     api_call(get, "/matches", Headers),
   true = is_list(jiffy:decode(RespBody)).
 
+-spec get_status(config()) -> ok.
 get_status(_Config) ->
   Headers = #{<<"content-type">> => <<"application/json">>},
   PlayersBody = jiffy:encode(#{player1 => "Juan", player2 => "Fede"}),
@@ -117,6 +132,7 @@ get_status(_Config) ->
     maps:get(<<"status">>, jiffy:decode(RespBody, [return_maps])),
   ok.
 
+-spec first_play(config()) -> ok.
 first_play(_Config) ->
   Headers = #{<<"content-type">> => <<"application/json">>},
   PlayersBody = jiffy:encode(#{player1 => "Juan", player2 => "Fede"}),
@@ -132,6 +148,7 @@ first_play(_Config) ->
   2 = maps:get(<<"next_chip">>, State),
   ok.
 
+-spec play_bad_id(config()) -> ok.
 play_bad_id(_config) ->
   Headers = #{<<"content-type">> => <<"application/json">>},
   PlayersBody = jiffy:encode(#{player1 => "Juan", player2 => "Fede"}),
@@ -143,6 +160,7 @@ play_bad_id(_config) ->
     api_call(put, "/matches/2056356", Headers, MoveBody),
   ok.
 
+-spec start_without_players(config()) -> ok.
 start_without_players(_Config) ->
   Headers = #{<<"content-type">> => <<"application/json">>},
   {ok, #{status_code := 400}} =

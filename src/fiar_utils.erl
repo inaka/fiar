@@ -25,6 +25,7 @@ handle_exception(conflict, Req, State)->
   {ok, Req1} = cowboy_req:reply(409, Req),
   {halt, Req1, State};
 handle_exception(Reason, Req, State) ->
-  lager:error("~p", [Reason]),
+  ST = erlang:get_stacktrace(),
+  lager:error("~p - ~p", [Reason, ST]),
   {ok, Req1} = cowboy_req:reply(500, Req),
   {halt, Req1, State}.

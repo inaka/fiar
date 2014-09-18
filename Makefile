@@ -18,5 +18,9 @@ TEST_ERLC_OPTS += +'{parse_transform, lager_transform}'
 shell: app
 	erl -pa ebin -pa deps/*/ebin -s sync -s fiar -config config/test.config
 
+
+test-shell: build-ct-suites app
+	erl -pa ebin -pa deps/*/ebin -pa test -s sync -s fiar -s shotgun -config config/test.config
+
 devtests: tests
 	open logs/index.html

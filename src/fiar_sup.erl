@@ -9,7 +9,15 @@ start_link() ->
   supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
+  KatanaRandom =
+      {ktn_random,
+       {ktn_random, start_link, []},
+       permanent,
+       5000,
+       worker,
+       [ktn_random]
+      },
   {ok, {{one_for_one, 10, 60},
-    []
+    [KatanaRandom]
     }
   }.

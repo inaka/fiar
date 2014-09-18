@@ -17,8 +17,8 @@
 init(_Transport, _Req, _Opts) ->
   {upgrade, protocol, cowboy_rest}.
 
-rest_init(Req, State) ->
-  {ok, Req, State}. 
+rest_init(Req, _Opts) ->
+  {ok, Req, #{}}. 
 
 allowed_methods(Req, State) ->
   {[<<"GET">>, <<"POST">>, <<"OPTIONS">>], Req, State}.
@@ -33,7 +33,12 @@ content_types_provided(Req, State) ->
   {[{{<<"application">>, <<"json">>, []}, handle_get}], Req, State}.
 
 is_authorized(Req, State) ->
-  {true, Req, State}.
+    case fiar_auth:check_auth(Req) of
+        {authenticated, User, _Req1} ->
+            {true, Req, #{user => User}};
+        {not_authenticated, AuthHeader, Req1} ->
+            {{false, AuthHeader}, Req1, State}
+    end.
 
 handle_get(Req, State) ->
   Matches = fiar:get_matches(),

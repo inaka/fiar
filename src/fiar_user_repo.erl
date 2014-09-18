@@ -3,6 +3,7 @@
 -export([ create/1
         , get_user/1
         , get_users/0
+        , get/2
         ]).
 
 create(Username) ->
@@ -25,5 +26,14 @@ get_user(Uid) ->
 get_users() ->
   sumo:find_all(fiar_user).
 
+-spec get(string(), string()) -> not_found | user().
+get(Key, Secret) ->
+  case sumo:find_by(thoughtz_users, [{key, Key}, {secret, Secret}]) of
+    []     -> not_found;
+    [User] -> User;
+    _      -> throw({multiple_users, {Key, Secret}})
+  end.
+
+% @private
 find_by_username(Username) ->
   sumo:find_by(fiar_user, [{username, Username}]).

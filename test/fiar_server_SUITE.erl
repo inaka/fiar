@@ -64,8 +64,7 @@ all() -> [Fun || {Fun, 1} <- module_info(exports), Fun =/= module_info].
 
 groups() -> [{basic,
               [],
-              [ start
-              , get_matches
+              [ get_matches
               , get_status
               , first_play
               , play_bad_id
@@ -80,10 +79,26 @@ init_per_group(basic, Config) ->
   ok = fiar:start(),
   Config.
 
-init_per_testcase(_, Config) ->
+init_per_testcase(start, Config) ->
   {ok, _} = application:ensure_all_started(shotgun),
   ok = fiar:start(),
   Headers = #{<<"content-type">> => <<"application/json">>},
+  UserBody = jiffy:encode(#{username => "Juan"}),
+  {ok, #{status_code := 200, body => NewBody}} =
+    api_call(post, "/users", Headers, UserBody),
+  BodyDecode = jiffy:decode(NewBody, [return_maps]),
+  Username = integer_to_list(maps:get(<<"username">>, BodyDecode)),
+  Pass = integer_to_list(maps:get(<<"key">>, BodyDecode)),
+
+  User2Body = jiffy:encode(#{username => "Fede"}),
+  {ok, #{status_code := 200, body => NewBody2}} =
+    api_call(post, "/users", Headers, User2Body),
+  BodyDecode2 = jiffy:decode(NewBody2, [return_maps]),
+  Username2 = integer_to_list(maps:get(<<"username">>, BodyDecode2)),
+  [{username, Username}, {pass, Pass}, {username2, Username2} | Config];
+init_per_testcase(_, Config) ->
+  {ok, _} = application:ensure_all_started(shotgun),
+  ok = fiar:start(),
   PlayersBody = jiffy:encode(#{player1 => "Juan", player2 => "Fede"}),
   {ok, #{status_code := 200, body := NewBody}} =
     api_call(post, "/matches", Headers, PlayersBody),
@@ -95,7 +110,6 @@ end_per_testcase(_, Config) ->
   fiar:stop(),
   Config.
 
-%basic_auth => {"User", Pass}}
 -spec create_user(config()) -> ok.
 create_user(_Config) ->
   Headers = #{<<"content-type">> => <<"application/json">>},
@@ -115,9 +129,13 @@ unique_user(_Config) ->
     api_call(post, "/users", Headers, Body).
 
 -spec start(config()) -> ok.
-start(_Config) ->
-  Headers = #{<<"content-type">> => <<"application/json">>},
-  Body = jiffy:encode(#{player1 => "Juan", player2 => "Fede"}),
+start(Config) ->
+  Username = proplists:get_value(username, Config),
+  Player2 = proplists:get_value(username2, Config),
+  Pass = proplists:get_value(pass, Config),
+  Headers = #{<<"content-type">> => <<"application/json">>
+              basic_auth => {Username, Pass}},
+  Body = jiffy:encode(#{player2 => Player2}),
   {ok, #{status_code := 200, body := _}} =
     api_call(post, "/matches", Headers, Body).
 

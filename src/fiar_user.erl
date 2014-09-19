@@ -9,9 +9,9 @@
   [ new/1
   , get_id/1
   , get_username/1
-  , get_key/1
+  , get_pass/1
   , set_username/2
-  , set_key/2
+  , set_pass/2
   , set_updated_at/1
   , to_json/1
   ]).
@@ -31,7 +31,7 @@ sumo_schema() ->
                                                   , not_null
                                                   , unique
                                                   ])
-    , sumo:new_field(key,           string,       [ {length, 255}
+    , sumo:new_field(pass,           string,      [ {length, 255}
                                                   , not_null
                                                   ])
     , sumo:new_field(created_at,    datetime,     [not_null])
@@ -41,7 +41,7 @@ sumo_schema() ->
 sumo_sleep(User) ->
   [ {id,          proplists:get_value(id, User)}
   , {username,    proplists:get_value(username, User)}
-  , {key,         proplists:get_value(key, User)}
+  , {pass,        proplists:get_value(pass, User)}
   , {created_at,  proplists:get_value(created_at, User)}
   , {updated_at,  proplists:get_value(updated_at, User)}
   ].
@@ -49,7 +49,7 @@ sumo_sleep(User) ->
 sumo_wakeup(User) ->
   [ {id,          proplists:get_value(id, User)}
   , {username,    proplists:get_value(username, User)}
-  , {key,         proplists:get_value(key, User)}
+  , {pass,        proplists:get_value(pass, User)}
   , {created_at,  proplists:get_value(created_at, User)}
   , {updated_at,  proplists:get_value(updated_at, User)}
   ].
@@ -60,9 +60,9 @@ sumo_wakeup(User) ->
 %% @doc Creates, stores and returns a news flash.
 new(Username) ->
   Now = {datetime, calendar:universal_time()},
-  Key = ktn_random:generate(),
+  Pass = ktn_random:generate(),
   [ {username,    Username}
-  , {key,         Key}
+  , {pass,         Pass}
   , {created_at,  Now}
   , {updated_at,  Now}].
 
@@ -70,11 +70,11 @@ get_id(User) -> proplists:get_value(id, User).
 
 get_username(User) -> proplists:get_value(username, User).
 
-get_key(User) -> proplists:get_value(key, User).
+get_pass(User) -> proplists:get_value(pass, User).
 
 set_username(User, Username) -> [{status, Username} | User].
 
-set_key(User, Key) -> [{status, Key} | User].
+set_pass(User, Pass) -> [{status, Pass} | User].
 
 set_updated_at(User) -> [{datetime, calendar:universal_time()} | User].
 

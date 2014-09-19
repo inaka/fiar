@@ -7,7 +7,8 @@
 
 -export([
          check_auth/1,
-         current_user/1
+         current_user/1,
+         credentials/1
         ]).
 
 -define(AUTH_HEADER, <<"Basic realm=\"FiaR\"">>).
@@ -30,13 +31,9 @@ current_user(Req) ->
   case credentials(Req) of
     undefined ->
       undefined;
-    {Key, Secret} ->
-      fiar_user_repo:get(Key, Secret)
+    {Username, Pass} ->
+      fiar_user_repo:get(Username, Pass)
   end.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Private functions
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 credentials(Req) ->
   try cowboy_req:parse_header(<<"authorization">>, Req) of

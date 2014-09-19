@@ -16,9 +16,10 @@
         , play/2
         , match_status/1
         , get_match/1
-        , get_matches/0
+        , get_matches/1
         , new_user/1
         , get_user/1
+        , find_by_username/1
         ]).
 
 -spec start() -> ok | {error, term()}.
@@ -53,8 +54,8 @@ stop(_State) ->
   ok.
 
 -spec start_match(player(), player()) -> match().
-start_match(Player1, Player2) ->
-  fiar_match_repo:start(Player1, Player2).
+start_match(User1, User2) ->
+  fiar_match_repo:start(User1, User2).
 
 -spec new_user(username()) -> user().
 new_user(Username) ->
@@ -77,8 +78,11 @@ match_status(Match) ->
 get_match(MatchId) ->
   fiar_match_repo:get_match(MatchId).
 
-get_matches() ->
-  fiar_match_repo:get_matches().
+get_matches(User) ->
+  fiar_match_repo:get_matches(User).
+
+find_by_username(Username) ->
+  fiar_user_repo:find_by_username(Username).
 
 start_cowboy_listeners() ->
   Dispatch = cowboy_router:compile([

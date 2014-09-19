@@ -28,8 +28,8 @@
 sumo_schema() ->
   sumo:new_schema(?MODULE,
     [ sumo:new_field(id,            integer,      [id, not_null, auto_increment])
-    , sumo:new_field(player1,       string,       [{length, 255}, not_null])
-    , sumo:new_field(player2,       string,       [{length, 255}, not_null])
+    , sumo:new_field(player1,       integer,      [not_null])
+    , sumo:new_field(player2,       integer,      [not_null])
     , sumo:new_field(status,        string,       [{length, 255}, not_null])
     , sumo:new_field(state,         binary,       [not_null])
     , sumo:new_field(created_at,    datetime,     [not_null])

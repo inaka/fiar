@@ -4,11 +4,21 @@
         , get_user/1
         , get_users/0
         , get/2
+        , find_by_username/1
         ]).
+
+-type user() ::
+        #{
+           id => integer(),
+           username => string(),
+           pass => string(),
+           created_at => thz_utils:datetime(),
+           updated_at => thz_utils:datetime()
+         }.
 
 create(Username) ->
   case find_by_username(Username) of
-    [User|_] ->
+    [_User|_] ->
           throw(conflict);
     [] -> 
           NewUser = fiar_user:new(Username),
@@ -27,13 +37,12 @@ get_users() ->
   sumo:find_all(fiar_user).
 
 -spec get(string(), string()) -> not_found | user().
-get(Key, Secret) ->
-  case sumo:find_by(thoughtz_users, [{key, Key}, {secret, Secret}]) of
+get(Username, Pass) ->
+  case sumo:find_by(fiar_user, [{username, Username}, {pass, Pass}]) of
     []     -> not_found;
     [User] -> User;
-    _      -> throw({multiple_users, {Key, Secret}})
+    _      -> throw({multiple_users, {Username, Pass}})
   end.
 
-% @private
 find_by_username(Username) ->
   sumo:find_by(fiar_user, [{username, Username}]).

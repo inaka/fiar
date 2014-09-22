@@ -62,21 +62,11 @@ new(Username) ->
   Now = {datetime, calendar:universal_time()},
   Pass = ktn_random:generate(),
   [ {username,    Username}
-  , {pass,         Pass}
+  , {pass,        Pass}
   , {created_at,  Now}
   , {updated_at,  Now}].
 
 get_id(User) -> proplists:get_value(id, User).
-
-get_username(User) -> proplists:get_value(username, User).
-
-get_pass(User) -> proplists:get_value(pass, User).
-
-set_username(User, Username) -> [{status, Username} | User].
-
-set_pass(User, Pass) -> [{status, Pass} | User].
-
-set_updated_at(User) -> [{datetime, calendar:universal_time()} | User].
 
 to_json(User) ->
   { [to_json_attr(K, V) || {K, V} <- User] }.

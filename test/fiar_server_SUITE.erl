@@ -208,15 +208,9 @@ get_matches(_Config) ->
               basic_auth => {Name3, Pass3}},
 
   {ok, #{status_code := 200, body := RespBody3}} =
-    api_call(get, "/matches", Headers3).
-  % [] = jiffy:decode(RespBody3),
-
-
-
-
-
-
-
+    api_call(get, "/matches", Headers3),
+  [] = jiffy:decode(RespBody3),
+  ok.
 
 -spec get_status(config()) -> ok.
 get_status(_Config) ->

@@ -48,7 +48,7 @@
 
 -export([ start/1
         , get_matches/1
-        % , get_status/1
+        , get_status/1
         % , first_play/1
         % , play_bad_id/1
         % , wins_vertically/1
@@ -106,6 +106,7 @@ all() -> [Fun || {Fun, 1} <- module_info(exports), Fun =/= module_info].
 init_per_testcase(create_user, Config) -> init_per_testcase1(Config);
 init_per_testcase(unique_user, Config) -> init_per_testcase1(Config);
 init_per_testcase(get_matches, Config) -> init_per_testcase1(Config);
+init_per_testcase(get_status, Config) -> init_per_testcase1(Config);
 init_per_testcase(start, Config) -> init_per_testcase2(Config).
 
 init_per_testcase1(Config) ->
@@ -184,9 +185,8 @@ start(Config) ->
     api_call(post, "/matches", Headers, Body1),
   ok.
 
--spec get_matches(config()) -> ok.
+-spec get_matches(config()) -> true.
 get_matches(_Config) ->
-
   Headers = #{<<"content-type">> => <<"application/json">>},
   Name1 = ktn_random:generate(),
   UserBody = jiffy:encode(#{username => Name1}),
@@ -202,25 +202,55 @@ get_matches(_Config) ->
   Username = binary_to_list(maps:get(<<"username">>, BodyDecode)),
   Pass = binary_to_list(maps:get(<<"pass">>, BodyDecode)),
 
-  Headers2 = #{<<"content-type">> => <<"application/json">>,
+  Headers1 = #{<<"content-type">> => <<"application/json">>,
               basic_auth => {Username, Pass}},
-  {ok, #{status_code := 200}} =
-    api_call(get, "/matches", Headers).
-  % true = is_list(jiffy:decode(RespBody)).
+  {ok, #{status_code := 200, body := RespBody}} =
+    api_call(get, "/matches", Headers1),
+  [] = jiffy:decode(RespBody),
 
-% -spec get_status(config()) -> ok.
-% get_status(_Config) ->
-%   Headers = #{<<"content-type">> => <<"application/json">>},
-%   PlayersBody = jiffy:encode(#{player1 => "Juan", player2 => "Fede"}),
-%   {ok, #{status_code := 200, body := NewBody}} =
-%     api_call(post, "/matches", Headers, PlayersBody),
-%   Mid =
-%     integer_to_list(maps:get(<<"id">>, jiffy:decode(NewBody, [return_maps]))),
-%   {ok, #{status_code := 200, body := RespBody}} =
-%     api_call(get, "/matches/"++Mid, Headers, #{}),
-%   <<"on_course">> =
-%     maps:get(<<"status">>, jiffy:decode(RespBody, [return_maps])),
-%   ok.
+  Body0 = jiffy:encode(#{player2 => Name2}),
+  {ok, #{status_code := 200}} =
+    api_call(post, "/matches", Headers1, Body0),
+  {ok, #{status_code := 200, body := RespBody1}} =
+    api_call(get, "/matches", Headers1),
+  [_] = jiffy:decode(RespBody1),
+
+  BodyDecode2 = jiffy:decode(User2, [return_maps]),
+  Username2 = binary_to_list(maps:get(<<"username">>, BodyDecode2)),
+  Pass2 = binary_to_list(maps:get(<<"pass">>, BodyDecode2)),
+
+  Headers2 = #{<<"content-type">> => <<"application/json">>,
+              basic_auth => {Username2, Pass2}},
+
+  {ok, #{status_code := 200, body := RespBody2}} =
+    api_call(get, "/matches", Headers2),
+  [_] = jiffy:decode(RespBody2).
+
+-spec get_status(config()) -> ok.
+get_status(_Config) ->
+  Headers = #{<<"content-type">> => <<"application/json">>},
+  Name1 = ktn_random:generate(),
+  UserBody = jiffy:encode(#{username => Name1}),
+  {ok, #{status_code := 200, body := User}} =
+    api_call(post, "/users", Headers, UserBody),
+
+  BodyDecode = jiffy:decode(User, [return_maps]),
+  Username = binary_to_list(maps:get(<<"username">>, BodyDecode)),
+  Pass = binary_to_list(maps:get(<<"pass">>, BodyDecode)),
+
+  Headers1 = #{<<"content-type">> => <<"application/json">>,
+              basic_auth => {Username, Pass}},
+  Body = jiffy:encode(#{player2 => Name1}),
+  {ok, #{status_code := 200, body := MatchBody}} =
+    api_call(post, "/matches", Headers1, Body),
+
+  Mid =
+    integer_to_list(maps:get(<<"id">>, jiffy:decode(MatchBody, [return_maps]))),
+  {ok, #{status_code := 200, body := RespBody}} =
+    api_call(get, "/matches/"++Mid, Headers1, #{}),
+  <<"on_course">> =
+    maps:get(<<"status">>, jiffy:decode(RespBody, [return_maps]))
+  ok.
 
 % -spec first_play(config()) -> ok.
 % first_play(_Config) ->

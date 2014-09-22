@@ -33,14 +33,19 @@ content_types_provided(Req, State) ->
   {[{{<<"application">>, <<"json">>, []}, handle_get}], Req, State}.
 
 is_authorized(Req, State) ->
-  {true, Req, State}.
+  case fiar_auth:check_auth(Req) of
+    {authenticated, User, _Req1} ->
+        {true, Req, #{user => User}};
+    {not_authenticated, AuthHeader, Req1} ->
+        {{false, AuthHeader}, Req1, State}
+  end.
 
 handle_get(Req, State) ->
   {MatchId, Req1} =  cowboy_req:binding(match_id, Req),
   Match = fiar:get_match(MatchId),
   MatchJson = fiar_match:to_json(Match),
   RespBody = jiffy:encode(MatchJson),
-  {RespBody, Req1, State}.
+  {RespBody, Req, State}.
 
 handle_put(Req, State) ->
   {MatchIdBin, Req1} =  cowboy_req:binding(match_id, Req),

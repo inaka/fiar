@@ -68,4 +68,6 @@ get_match(Mid) ->
   end.
 
 get_matches(User) ->
-  sumo:find_by(fiar_match, [{player1, fiar_user:get_id(User)}]).
+  MatchesAsP1 = sumo:find_by(fiar_match, [{player1, fiar_user:get_id(User)}]),
+  MatchesAsP2 = sumo:find_by(fiar_match, [{player2, fiar_user:get_id(User)}]),
+  MatchesAsP1 ++ MatchesAsP2.

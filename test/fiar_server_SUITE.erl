@@ -383,10 +383,10 @@ wins_left_diagonally(Config) ->
 %% @private
 drop_chips([], Mid, [Header, _]) -> 
   api_call(get, "/matches/"++Mid, Header, #{});
-drop_chips([Col|Rest], Mid, [A, B]) ->
+drop_chips([Col|Rest], Mid, [Header1, Header2]) ->
   MoveBody = jiffy:encode(#{column => Col}),
-  api_call(put, "/matches/" ++ Mid, A, MoveBody),
-  drop_chips(Rest, Mid, [B, A]).
+  api_call(put, "/matches/" ++ Mid, Header1, MoveBody),
+  drop_chips(Rest, Mid, [Header2, Header1]).
 
 api_call(Method, Url, Headers) ->
   api_call(Method, Url, Headers, "").

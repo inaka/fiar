@@ -61,7 +61,7 @@ start_match(User1, User2) ->
 new_user(Username) ->
   fiar_user_repo:create(Username).
 
--spec get_user(username()) -> user().
+-spec get_user(user()) -> user().
 get_user(Uid) ->
   fiar_user_repo:get_user(Uid).
 
@@ -82,7 +82,12 @@ get_matches(User) ->
   fiar_match_repo:get_matches(User).
 
 find_by_username(Username) ->
-  fiar_user_repo:find_by_username(Username).
+  case fiar_user_repo:find_by_username(Username) of
+    notfound ->
+          throw(bad_request);
+    User -> 
+          User
+  end.
 
 start_cowboy_listeners() ->
   Dispatch = cowboy_router:compile([

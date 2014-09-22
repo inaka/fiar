@@ -45,7 +45,7 @@ handle_get(Req, State) ->
   Match = fiar:get_match(MatchId),
   MatchJson = fiar_match:to_json(Match),
   RespBody = jiffy:encode(MatchJson),
-  {RespBody, Req, State}.
+  {RespBody, Req1, State}.
 
 handle_put(Req, State) ->
   {MatchIdBin, Req1} =  cowboy_req:binding(match_id, Req),

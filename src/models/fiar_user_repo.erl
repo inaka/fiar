@@ -12,19 +12,21 @@
            id => integer(),
            username => string(),
            pass => string(),
-           created_at => thz_utils:datetime(),
-           updated_at => thz_utils:datetime()
+           created_at => fiar_utils:datetime(),
+           updated_at => fiar_utils:datetime()
          }.
+
+-export_type([user/0]).
 
 create(Username) ->
   case find_by_username(Username) of
-    [_User|_] ->
-          throw(conflict);
-    [] -> 
+    notfound -> 
           NewUser = fiar_user:new(Username),
           lager:info("User previous to save: ~p", [NewUser]),
           StoredUser = sumo:persist(fiar_user, NewUser),
-          fiar_user:get_id(StoredUser)
+          fiar_user:get_id(StoredUser);
+    User ->
+          throw(conflict)
   end.
 
 get_user(Uid) ->
@@ -45,4 +47,7 @@ get(Username, Pass) ->
   end.
 
 find_by_username(Username) ->
-  sumo:find_by(fiar_user, [{username, Username}]).
+  case sumo:find_by(fiar_user, [{username, Username}]) of
+    [User] -> User;
+    _      -> notfound
+  end.

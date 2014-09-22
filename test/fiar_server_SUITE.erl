@@ -194,7 +194,29 @@ get_matches(_Config) ->
 
   {ok, #{status_code := 200, body := RespBody2}} =
     api_call(get, "/matches", Headers2),
-  [_] = jiffy:decode(RespBody2).
+  [_] = jiffy:decode(RespBody2),
+
+  Name3 = ktn_random:generate(),
+  User3Body = jiffy:encode(#{username => Name3}),
+  {ok, #{status_code := 200, body := User3}} =
+    api_call(post, "/users", Headers, User3Body),
+
+  BodyDecode3 = jiffy:decode(User3, [return_maps]),
+  Pass3 = binary_to_list(maps:get(<<"pass">>, BodyDecode3)),
+
+  Headers3 = #{<<"content-type">> => <<"application/json">>,
+              basic_auth => {Name3, Pass3}},
+
+  {ok, #{status_code := 200, body := RespBody3}} =
+    api_call(get, "/matches", Headers3).
+  % [] = jiffy:decode(RespBody3),
+
+
+
+
+
+
+
 
 -spec get_status(config()) -> ok.
 get_status(_Config) ->

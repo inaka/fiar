@@ -4,6 +4,16 @@
          handle_exception/3
         ]).
 
+-type datetime() ::
+        {
+          datetime,
+          {
+            {integer(), integer(), integer()},
+            {integer(), integer(), integer()}
+          }
+        }.
+-export_type([datetime/0]).
+
 -spec handle_exception(atom(), cowboy_req:req(), term()) ->
   {halt, cowboy_req:req(), term()}.
 handle_exception(bad_request, Req, State) ->

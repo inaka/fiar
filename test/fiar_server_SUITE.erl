@@ -95,13 +95,13 @@ authenticated(Config) ->
   {ok, #{status_code := 200, body := User2}} =
     api_call(post, "/users", Headers, User2Body),
   BodyDecode2 = jiffy:decode(User2, [return_maps]),
-  Pass2 = binary_to_list(maps:get(<<"pass">>, BodyDecode2)),
+  Pass2 = maps:get(<<"pass">>, BodyDecode2),
 
   %create match
   BodyDecode = jiffy:decode(User1, [return_maps]),
-  Username = binary_to_list(maps:get(<<"username">>, BodyDecode)),
+  Username = maps:get(<<"username">>, BodyDecode),
 
-  Pass = binary_to_list(maps:get(<<"pass">>, BodyDecode)),
+  Pass = maps:get(<<"pass">>, BodyDecode),
   Headers1 = #{<<"content-type">> => <<"application/json">>,
               basic_auth => {Username, Pass}},
   Body = jiffy:encode(#{player2 => Name2}),
@@ -169,8 +169,8 @@ get_matches(_Config) ->
     api_call(post, "/users", Headers, User2Body),
   
   BodyDecode = jiffy:decode(User1, [return_maps]),
-  Username = binary_to_list(maps:get(<<"username">>, BodyDecode)),
-  Pass = binary_to_list(maps:get(<<"pass">>, BodyDecode)),
+  Username = maps:get(<<"username">>, BodyDecode),
+  Pass = maps:get(<<"pass">>, BodyDecode),
 
   Headers1 = #{<<"content-type">> => <<"application/json">>,
               basic_auth => {Username, Pass}},
@@ -186,8 +186,8 @@ get_matches(_Config) ->
   [_] = jiffy:decode(RespBody1),
 
   BodyDecode2 = jiffy:decode(User2, [return_maps]),
-  Username2 = binary_to_list(maps:get(<<"username">>, BodyDecode2)),
-  Pass2 = binary_to_list(maps:get(<<"pass">>, BodyDecode2)),
+  Username2 = maps:get(<<"username">>, BodyDecode2),
+  Pass2 = maps:get(<<"pass">>, BodyDecode2),
 
   Headers2 = #{<<"content-type">> => <<"application/json">>,
               basic_auth => {Username2, Pass2}},
@@ -202,7 +202,7 @@ get_matches(_Config) ->
     api_call(post, "/users", Headers, User3Body),
 
   BodyDecode3 = jiffy:decode(User3, [return_maps]),
-  Pass3 = binary_to_list(maps:get(<<"pass">>, BodyDecode3)),
+  Pass3 = maps:get(<<"pass">>, BodyDecode3),
 
   Headers3 = #{<<"content-type">> => <<"application/json">>,
               basic_auth => {Name3, Pass3}},
@@ -223,8 +223,8 @@ get_status(_Config) ->
 
   %create match
   BodyDecode = jiffy:decode(User, [return_maps]),
-  Username = binary_to_list(maps:get(<<"username">>, BodyDecode)),
-  Pass = binary_to_list(maps:get(<<"pass">>, BodyDecode)),
+  Username = maps:get(<<"username">>, BodyDecode),
+  Pass = maps:get(<<"pass">>, BodyDecode),
   Headers1 = #{<<"content-type">> => <<"application/json">>,
               basic_auth => {Username, Pass}},
   Body = jiffy:encode(#{player2 => Name1}),
@@ -251,8 +251,8 @@ first_play(_Config) ->
 
   %create match
   BodyDecode = jiffy:decode(User, [return_maps]),
-  Username = binary_to_list(maps:get(<<"username">>, BodyDecode)),
-  Pass = binary_to_list(maps:get(<<"pass">>, BodyDecode)),
+  Username = maps:get(<<"username">>, BodyDecode),
+  Pass = maps:get(<<"pass">>, BodyDecode),
   Headers1 = #{<<"content-type">> => <<"application/json">>,
               basic_auth => {Username, Pass}},
   Body = jiffy:encode(#{player2 => Name1}),

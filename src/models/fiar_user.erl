@@ -8,11 +8,6 @@
 -export(
   [ new/1
   , get_id/1
-  , get_username/1
-  , get_pass/1
-  , set_username/2
-  , set_pass/2
-  , set_updated_at/1
   , to_json/1
   ]).
 %%% Behaviour callbacks.

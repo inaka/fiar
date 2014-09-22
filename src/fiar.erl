@@ -3,7 +3,7 @@
 -behaviour(application).
 
 -type match() :: fiar_match:id().
--type user() :: fiar_user:id().
+-type user() :: fiar_user_repo:user().
 -type player() :: fiar_match:player().
 -type username() :: fiar_user:username().
 -type status() :: fiar_match_repo:status().

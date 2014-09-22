@@ -257,7 +257,6 @@ first_play(_Config) ->
 -spec play_bad_id(config()) -> ok.
 play_bad_id(Config) ->
   Player1 = proplists:get_value(username, Config),
-  Player2 = proplists:get_value(username2, Config),
   Pass = proplists:get_value(pass, Config),
   Headers1 = #{<<"content-type">> => <<"application/json">>,
               basic_auth => {Player1, Pass}},

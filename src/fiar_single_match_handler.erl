@@ -33,14 +33,25 @@ content_types_provided(Req, State) ->
   {[{{<<"application">>, <<"json">>, []}, handle_get}], Req, State}.
 
 is_authorized(Req, State) ->
-  {true, Req, State}.
+  case fiar_auth:check_auth(Req) of
+    {authenticated, User, _Req1} ->
+        {true, Req, #{user => User}};
+    {not_authenticated, AuthHeader, Req1} ->
+        {{false, AuthHeader}, Req1, State}
+  end.
 
 handle_get(Req, State) ->
   {MatchId, Req1} =  cowboy_req:binding(match_id, Req),
-  Match = fiar:get_match(MatchId),
-  MatchJson = fiar_match:to_json(Match),
-  RespBody = jiffy:encode(MatchJson),
-  {RespBody, Req1, State}.
+  try
+    Match = fiar:get_match(MatchId, maps:get(user, State)),
+    MatchJson = fiar_match:to_json(Match),
+    RespBody = jiffy:encode(MatchJson),
+    {RespBody, Req1, State}
+  catch
+    throw:{notfound, Mid} ->
+            lager:info("Invalid ID: ~p~n", [Mid]),
+            fiar_utils:handle_exception(not_found, Req1, State)
+  end.
 
 handle_put(Req, State) ->
   {MatchIdBin, Req1} =  cowboy_req:binding(match_id, Req),
@@ -48,8 +59,9 @@ handle_put(Req, State) ->
     MatchId = binary_to_integer(MatchIdBin, 10),
     {ok, Body, Req2} =  cowboy_req:body(Req1),
     Col = maps:get(<<"column">>, jiffy:decode(Body, [return_maps])),
-    fiar:play(MatchId, Col),
-    Match = fiar:get_match(MatchId),
+    User = maps:get(user, State),
+    fiar:play(MatchId, Col, User),
+    Match = fiar:get_match(MatchId, User),
     MatchJson = fiar_match:to_json(Match),
     RespBody = jiffy:encode(MatchJson),
     Req3 = cowboy_req:set_resp_body(RespBody, Req2),

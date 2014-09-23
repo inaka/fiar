@@ -5,16 +5,23 @@
                 | {next_player, fiar_match:player()}.
 -export_type([status/0]).
 
--export([start/2, get_match/1, play/2, status/1, get_matches/0]).
+-export([start/2, get_match/2, play/3, status/2, get_matches/1]).
 
-start(Player1, Player2) ->
+start(User1, User2) ->
+  Player1 = fiar_user:get_id(User1),
+  Player2 = fiar_user:get_id(User2),
   Match = fiar_match:new(Player1, Player2),
   lager:info("Match Previous to save: ~p", [Match]),
   StoredMatch = sumo:persist(fiar_match, Match),
   fiar_match:get_id(StoredMatch).
 
-play(Mid, Col) ->
-  Match = get_match(Mid),
+play(Mid, Col, User) ->
+  Match = get_match(Mid, User),
+  UserId = fiar_user:get_id(User),
+  case fiar_match:get_player(Match) of
+    UserId -> ok;
+    _OtherPlayer -> throw(invalid_player)
+  end,
   Status = fiar_match:get_status(Match),
   case Status of
     on_course -> 
@@ -31,17 +38,13 @@ play(Mid, Col) ->
           sumo:persist(fiar_match, NewMatch3),
           Reply
       catch
-        _:Ex -> throw({error, Ex})
+        _:Ex -> throw(Ex)
       end;
     Status -> throw({match_finished, Status})
   end.
 
-status(Mid) ->
-  Match = 
-    case sumo:find(fiar_match, Mid) of
-      notfound -> throw({notfound, Mid});
-      M -> M
-    end,
+status(Mid, User) ->
+  Match = get_match(Mid, User),
   Status = fiar_match:get_status(Match),
   case Status of
     on_course -> {next_player, fiar_match:get_player(Match)};
@@ -59,11 +62,18 @@ new_status(won, State) ->
   end;
 new_status(drawn, _State) -> drawn.
 
-get_match(Mid) ->
+get_match(Mid, User) ->
   case sumo:find(fiar_match, Mid) of
     notfound -> throw({notfound, Mid});
-    M -> M
+    M ->
+      UserId = fiar_user:get_id(User),
+      case fiar_match:is_player(UserId, M) of
+        true -> M;
+        false -> throw({notfound, Mid})
+      end
   end.
 
-get_matches() ->
-  sumo:find_all(fiar_match).
+get_matches(User) ->
+  MatchesAsP1 = sumo:find_by(fiar_match, [{player1, fiar_user:get_id(User)}]),
+  MatchesAsP2 = sumo:find_by(fiar_match, [{player2, fiar_user:get_id(User)}]),
+  MatchesAsP1 ++ MatchesAsP2.

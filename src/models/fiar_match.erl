@@ -18,6 +18,7 @@
   , set_updated_at/1
   , to_json/1
   , match_list_to_json/1
+  , is_player/2
   ]).
 %%% Behaviour callbacks.
 -export([sumo_schema/0, sumo_wakeup/1, sumo_sleep/1]).
@@ -28,8 +29,8 @@
 sumo_schema() ->
   sumo:new_schema(?MODULE,
     [ sumo:new_field(id,            integer,      [id, not_null, auto_increment])
-    , sumo:new_field(player1,       string,       [{length, 255}, not_null])
-    , sumo:new_field(player2,       string,       [{length, 255}, not_null])
+    , sumo:new_field(player1,       integer,      [not_null])
+    , sumo:new_field(player2,       integer,      [not_null])
     , sumo:new_field(status,        string,       [{length, 255}, not_null])
     , sumo:new_field(state,         binary,       [not_null])
     , sumo:new_field(created_at,    datetime,     [not_null])
@@ -92,6 +93,13 @@ set_status(Match, Status) -> [{status, Status} | Match].
 set_state(Match, State) -> [{state, State} | Match].
 
 set_updated_at(Match) -> [{datetime, calendar:universal_time()} | Match].
+
+is_player(Uid, Match) ->
+  case {get_player1(Match), get_player2(Match)} of
+    {Uid, _} -> true;
+    {_, Uid} -> true;
+    {_, _} -> false
+  end.
 
 match_list_to_json(Matches) ->
   lists:map(fun to_json/1, Matches).

@@ -7,6 +7,11 @@
   fiar_sup,
   fiar,
   fiar_matches_handler,
-  fiar_single_match_handler
+  fiar_single_match_handler,
+  fiar_user,
+  fiar_user_repo,
+  fiar_users_handler,
+  fiar_utils,
+  fiar_auth
  ]
 }.

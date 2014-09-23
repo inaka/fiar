@@ -57,6 +57,7 @@
         , create_user/1
         , unique_user/1
         , bad_credentials/1
+        , complete_coverage/1
         ]).
 
 -spec all() -> [atom()].
@@ -68,6 +69,7 @@ init_per_testcase(get_matches, Config) -> basic(Config);
 init_per_testcase(get_status, Config) -> basic(Config);
 init_per_testcase(first_play, Config) -> basic(Config);
 init_per_testcase(bad_credentials, Config) -> basic(Config);
+init_per_testcase(complete_coverage, Config) -> basic(Config);
 init_per_testcase(play_bad_id, Config) -> authenticated(Config);
 init_per_testcase(start_without_player2, Config) -> authenticated(Config);
 init_per_testcase(wins_vertically, Config) -> authenticated(Config);
@@ -180,7 +182,8 @@ bad_credentials(_Config) ->
   %get match with bad id
   {ok, #{status_code := 404}} =
          api_call(get, "/matches/123456", Headers1),
-  ok.
+  {ok, #{status_code := 401}} =
+         api_call(get, "/matches/123456", Headers).
 
 -spec get_matches(config()) -> true.
 get_matches(_Config) ->
@@ -416,6 +419,14 @@ wins_left_diagonally(Config) ->
   2 = maps:get(<<"next_chip">>, State),
   <<"won_by_player2">> = maps:get(<<"status">>, BodyDecode),
   ok.
+
+-spec complete_coverage(config()) -> ok.
+complete_coverage(_Config) ->
+  try fiar_auth:credentials(bad_attribute) of
+    Credentials -> throw({error, Credentials})
+  catch
+    _ -> ok
+  end.
 
 %% @private
 drop_chips([], Mid, [Header, _]) -> 

@@ -50,10 +50,7 @@ handle_get(Req, State) ->
   catch
     throw:{notfound, Mid} ->
             lager:info("Invalid ID: ~p~n", [Mid]),
-            fiar_utils:handle_exception(not_found, Req1, State);
-    _:Exception ->
-            lager:info("Exception in PUT: ~p~n", [Exception]),
-            fiar_utils:handle_exception(Exception, Req1, State)
+            fiar_utils:handle_exception(not_found, Req1, State)
   end.
 
 handle_put(Req, State) ->

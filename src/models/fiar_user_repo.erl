@@ -30,8 +30,7 @@ create(Username) ->
 get(Username, Pass) ->
   case sumo:find_by(fiar_user, [{username, Username}, {pass, Pass}]) of
     []     -> not_found;
-    [User] -> User;
-    _      -> throw({multiple_users, {Username, Pass}})
+    [User] -> User
   end.
 
 find_by_username(Username) ->

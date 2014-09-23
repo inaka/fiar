@@ -22,6 +22,9 @@ handle_exception(invalid_player, Req, State) ->
 handle_exception(bad_request, Req, State) ->
   {ok, Req1} = cowboy_req:reply(400, Req),
   {halt, Req1, State};
+handle_exception(invalid_column, Req, State) ->
+  {ok, Req1} = cowboy_req:reply(400, Req),
+  {halt, Req1, State};
 handle_exception(bad_key, Req, State) ->
   {ok, Req1} = cowboy_req:reply(400, Req),
   {halt, Req1, State};

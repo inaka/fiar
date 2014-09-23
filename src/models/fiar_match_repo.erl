@@ -38,7 +38,7 @@ play(Mid, Col, User) ->
           sumo:persist(fiar_match, NewMatch3),
           Reply
       catch
-        _:Ex -> throw({error, Ex})
+        _:Ex -> throw(Ex)
       end;
     Status -> throw({match_finished, Status})
   end.

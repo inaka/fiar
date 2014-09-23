@@ -58,6 +58,8 @@
         , unique_user/1
         , bad_credentials/1
         , complete_coverage/1
+        , invalid/1
+        , drawn/1
         ]).
 
 -spec all() -> [atom()].
@@ -76,6 +78,8 @@ init_per_testcase(wins_vertically, Config) -> authenticated(Config);
 init_per_testcase(wins_horizontally, Config) -> authenticated(Config);
 init_per_testcase(wins_right_diagonally, Config) -> authenticated(Config);
 init_per_testcase(wins_left_diagonally, Config) -> authenticated(Config);
+init_per_testcase(invalid, Config) -> authenticated(Config);
+init_per_testcase(drawn, Config) -> authenticated(Config);
 init_per_testcase(start, Config) -> authenticated(Config).
 
 basic(Config) ->
@@ -182,8 +186,13 @@ bad_credentials(_Config) ->
   %get match with bad id
   {ok, #{status_code := 404}} =
          api_call(get, "/matches/123456", Headers1),
+  {ok, #{status_code := 404}} =
+         api_call(get, "/matches/id", Headers1),
   {ok, #{status_code := 401}} =
-         api_call(get, "/matches/123456", Headers).
+         api_call(get, "/matches/123456", Headers),
+  {ok, #{status_code := 401}} =
+         api_call(get, "/matches/id", Headers),
+  ok.
 
 -spec get_matches(config()) -> true.
 get_matches(_Config) ->
@@ -420,6 +429,52 @@ wins_left_diagonally(Config) ->
   <<"won_by_player2">> = maps:get(<<"status">>, BodyDecode),
   ok.
 
+-spec invalid(config()) -> ok.
+invalid(Config) ->
+  Mid = proplists:get_value(match_id, Config),
+  Player1 = proplists:get_value(username, Config),
+  Player2 = proplists:get_value(username2, Config),
+  Pass1 = proplists:get_value(pass, Config),
+  Pass2 = proplists:get_value(pass2, Config),
+  Headers1 = #{<<"content-type">> => <<"application/json">>,
+              basic_auth => {Player1, Pass1}},
+  Headers2 = #{<<"content-type">> => <<"application/json">>,
+              basic_auth => {Player2, Pass2}},
+  {ok, #{status_code := 200, body := RespBody}} =
+    drop_chips([1, 1, 1, 1, 1, 1, 1], Mid, [Headers1, Headers2]),
+  MoveBody = jiffy:encode(#{column => 1}),
+  {ok, #{status_code := 400}} =
+  api_call(put, "/matches/" ++ Mid, Headers2, MoveBody),
+  MoveBody1 = jiffy:encode(#{column => 9}),
+  {ok, #{status_code := 400}} =
+  api_call(put, "/matches/" ++ Mid, Headers2, MoveBody1),
+  ok.
+
+-spec drawn(_Config) -> ok.
+drawn(Config) ->
+  Mid = proplists:get_value(match_id, Config),
+  Player1 = proplists:get_value(username, Config),
+  Player2 = proplists:get_value(username2, Config),
+  Pass1 = proplists:get_value(pass, Config),
+  Pass2 = proplists:get_value(pass2, Config),
+  Headers1 = #{<<"content-type">> => <<"application/json">>,
+              basic_auth => {Player1, Pass1}},
+  Headers2 = #{<<"content-type">> => <<"application/json">>,
+              basic_auth => {Player2, Pass2}},
+  {ok, #{status_code := 200, body := RespBody}} =
+    drop_chips([1, 1, 1, 1, 1, 1, 1, 
+                4, 4, 4, 4, 4, 4, 4,
+                2, 2, 2, 2, 2, 2, 2,
+                5, 5, 5, 5, 5, 5, 5,
+                6, 6, 6, 6, 6, 6, 6,
+                7, 7, 7, 7, 7, 7, 7,
+                3, 3, 3, 3, 3, 3, 3],
+                Mid,
+                [Headers1, Headers2]),
+  BodyDecode = jiffy:decode(RespBody, [return_maps]),
+  <<"drawn">> = maps:get(<<"status">>, BodyDecode),
+  ok.
+  
 -spec complete_coverage(config()) -> ok.
 complete_coverage(_Config) ->
   try fiar_auth:credentials(bad_attribute) of

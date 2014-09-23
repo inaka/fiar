@@ -5,7 +5,7 @@
                 | {next_player, fiar_match:player()}.
 -export_type([status/0]).
 
--export([start/2, get_match/1, play/2, status/1, get_matches/1]).
+-export([start/2, get_match/2, play/3, status/2, get_matches/1]).
 
 start(User1, User2) ->
   Player1 = fiar_user:get_id(User1),
@@ -15,8 +15,13 @@ start(User1, User2) ->
   StoredMatch = sumo:persist(fiar_match, Match),
   fiar_match:get_id(StoredMatch).
 
-play(Mid, Col) ->
-  Match = get_match(Mid),
+play(Mid, Col, User) ->
+  Match = get_match(Mid, User),
+  UserId = fiar_user:get_id(User),
+  case fiar_match:get_player(Match) of
+    UserId -> ok;
+    _OtherPlayer -> throw(invalid_player)
+  end,
   Status = fiar_match:get_status(Match),
   case Status of
     on_course -> 
@@ -38,12 +43,8 @@ play(Mid, Col) ->
     Status -> throw({match_finished, Status})
   end.
 
-status(Mid) ->
-  Match = 
-    case sumo:find(fiar_match, Mid) of
-      notfound -> throw({notfound, Mid});
-      M -> M
-    end,
+status(Mid, User) ->
+  Match = get_match(Mid, User),
   Status = fiar_match:get_status(Match),
   case Status of
     on_course -> {next_player, fiar_match:get_player(Match)};
@@ -61,10 +62,15 @@ new_status(won, State) ->
   end;
 new_status(drawn, _State) -> drawn.
 
-get_match(Mid) ->
+get_match(Mid, User) ->
   case sumo:find(fiar_match, Mid) of
     notfound -> throw({notfound, Mid});
-    M -> M
+    M ->
+      UserId = fiar_user:get_id(User),
+      case fiar_match:is_player(UserId, M) of
+        true -> M;
+        false -> throw({notfound, Mid})
+      end
   end.
 
 get_matches(User) ->

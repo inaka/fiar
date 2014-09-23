@@ -56,6 +56,7 @@
         , start_without_player2/1
         , create_user/1
         , unique_user/1
+        , bad_credentials/1
         ]).
 
 -spec all() -> [atom()].
@@ -66,6 +67,7 @@ init_per_testcase(unique_user, Config) -> basic(Config);
 init_per_testcase(get_matches, Config) -> basic(Config);
 init_per_testcase(get_status, Config) -> basic(Config);
 init_per_testcase(first_play, Config) -> basic(Config);
+init_per_testcase(bad_credentials, Config) -> basic(Config);
 init_per_testcase(play_bad_id, Config) -> authenticated(Config);
 init_per_testcase(start_without_player2, Config) -> authenticated(Config);
 init_per_testcase(wins_vertically, Config) -> authenticated(Config);
@@ -155,6 +157,31 @@ start(Config) ->
     api_call(post, "/matches", Headers, Body1),
   ok.
 
+-spec bad_credentials(config()) -> ok.
+bad_credentials(_Config) ->
+  %without auth
+  Headers = #{<<"content-type">> => <<"application/json">>},  
+  {ok, #{status_code := 401}} =
+         api_call(get, "/matches", Headers),
+  %bad user and pass
+  HeadersInv = #{<<"content-type">> => <<"application/json">>,
+               basic_auth => {"user", "pass"}},
+  {ok, #{status_code := 401}} =
+         api_call(get, "/matches", HeadersInv),
+  %crate user
+  Name = ktn_random:generate(),
+  UserBody = jiffy:encode(#{username => Name}),
+  {ok, #{status_code := 200, body := User}} =
+         api_call(post, "/users", Headers, UserBody),
+  BodyDecode = jiffy:decode(User, [return_maps]),         
+  Pass = maps:get(<<"pass">>, BodyDecode),
+  Headers1 = #{<<"content-type">> => <<"application/json">>,
+               basic_auth => {Name, Pass}},
+  %get match with bad id
+  {ok, #{status_code := 404}} =
+         api_call(get, "/matches/123456", Headers1),
+  ok.
+
 -spec get_matches(config()) -> true.
 get_matches(_Config) ->
   Headers = #{<<"content-type">> => <<"application/json">>},
@@ -179,10 +206,11 @@ get_matches(_Config) ->
   [] = jiffy:decode(RespBody),
 
   Body0 = jiffy:encode(#{player2 => Name2}),
-  {ok, #{status_code := 200}} =
+  {ok, #{status_code := 200, body := MatchBody0}} =
     api_call(post, "/matches", Headers1, Body0),
   {ok, #{status_code := 200, body := RespBody1}} =
     api_call(get, "/matches", Headers1),
+  #{<<"id">> := Mid} = jiffy:decode(MatchBody0, [return_maps]),
   [_] = jiffy:decode(RespBody1),
 
   BodyDecode2 = jiffy:decode(User2, [return_maps]),
@@ -210,6 +238,15 @@ get_matches(_Config) ->
   {ok, #{status_code := 200, body := RespBody3}} =
     api_call(get, "/matches", Headers3),
   [] = jiffy:decode(RespBody3),
+    
+  {ok, #{status_code := 200}} =
+    api_call(get, "/matches/" ++ integer_to_list(Mid), Headers1),
+
+  {ok, #{status_code := 200}} =
+    api_call(get, "/matches/" ++ integer_to_list(Mid), Headers2),
+
+  {ok, #{status_code := 404}} =
+    api_call(get, "/matches/" ++ integer_to_list(Mid), Headers3),
   ok.
 
 -spec get_status(config()) -> ok.

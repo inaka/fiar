@@ -16,6 +16,9 @@
 
 -spec handle_exception(atom(), cowboy_req:req(), term()) ->
   {halt, cowboy_req:req(), term()}.
+handle_exception(invalid_player, Req, State) ->
+  {ok, Req1} = cowboy_req:reply(403, Req),
+  {halt, Req1, State};
 handle_exception(bad_request, Req, State) ->
   {ok, Req1} = cowboy_req:reply(400, Req),
   {halt, Req1, State};

@@ -1,8 +1,6 @@
 -module (fiar_user_repo).
 
 -export([ create/1
-        , get_user/1
-        , get_users/0
         , get/2
         , find_by_username/1
         ]).
@@ -27,15 +25,6 @@ create(Username) ->
     User ->
           throw(conflict)
   end.
-
-get_user(Uid) ->
-  case sumo:find(fiar_user, Uid) of
-    notfound -> throw({notfound, Uid});
-    U -> U
-  end.
-
-get_users() ->
-  sumo:find_all(fiar_user).
 
 -spec get(string(), string()) -> not_found | user().
 get(Username, Pass) ->

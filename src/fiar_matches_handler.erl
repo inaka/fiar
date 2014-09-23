@@ -54,7 +54,7 @@ handle_post(Req, State) ->
     User1 = maps:get(user, State),
     User2 = fiar:find_by_username(Username),
     Mid = fiar:start_match(User1, User2),
-    Match = fiar:get_match(Mid),
+    Match = fiar:get_match(Mid, User1),
     MatchJson = fiar_match:to_json(Match),
     RespBody = jiffy:encode(MatchJson),
     Req2 = cowboy_req:set_resp_body(RespBody, Req1),

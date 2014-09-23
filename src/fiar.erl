@@ -13,12 +13,10 @@
         , start/2
         , stop/1
         , start_match/2
-        , play/2
-        , match_status/1
-        , get_match/1
+        , play/3
+        , get_match/2
         , get_matches/1
         , new_user/1
-        , get_user/1
         , find_by_username/1
         ]).
 
@@ -61,22 +59,14 @@ start_match(User1, User2) ->
 new_user(Username) ->
   fiar_user_repo:create(Username).
 
--spec get_user(user()) -> user().
-get_user(Uid) ->
-  fiar_user_repo:get_user(Uid).
-
--spec play(match(), fiar_core:col()) -> won | drawn | next.
-play(Mid, Col) ->
-  Result = fiar_match_repo:play(Mid, Col),
+-spec play(match(), fiar_core:col(), fiar_user:user()) -> won | drawn | next.
+play(Mid, Col, User) ->
+  Result = fiar_match_repo:play(Mid, Col, User),
   lager:info("result: ~p", [Result]),
   Result.
 
--spec match_status(match()) -> status().
-match_status(Match) ->
-  fiar_match_repo:status(Match).
-
-get_match(MatchId) ->
-  fiar_match_repo:get_match(MatchId).
+get_match(MatchId, User) ->
+  fiar_match_repo:get_match(MatchId, User).
 
 get_matches(User) ->
   fiar_match_repo:get_matches(User).

@@ -66,17 +66,5 @@ get_id(User) -> proplists:get_value(id, User).
 to_json(User) ->
   { [to_json_attr(K, V) || {K, V} <- User] }.
 
-to_json_attr(K, {datetime, DT}) -> {K, datetime_to_json(DT)};
+to_json_attr(K, {datetime, DT}) -> {K, fiar_utils:datetime_to_json(DT)};
 to_json_attr(K, V) -> {K, V}.
-
--spec datetime_to_json(choosy_utils:datetime()) ->
-  binary().
-%% @doc Converts a datetime record into a binary representation of its data.
-datetime_to_json({{Yi,Mi,Di},{Hi,Ni,Si}}) ->
-  Y = integer_to_list(Yi),
-  M = integer_to_list(Mi),
-  D = integer_to_list(Di),
-  H = integer_to_list(Hi),
-  N = integer_to_list(Ni),
-  S = integer_to_list(Si),
-  iolist_to_binary([Y,"-",M,"-",D,"T",H,":",N,":",S,".000000Z"]).

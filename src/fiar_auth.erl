@@ -17,7 +17,7 @@ check_auth(Req) ->
   case current_user(Req) of
     undefined ->
       {not_authenticated, ?AUTH_HEADER, Req};
-    not_found ->
+    notfound ->
       {not_authenticated, ?AUTH_HEADER, Req};
     User ->
       {authenticated, User, Req}
@@ -40,6 +40,6 @@ credentials(Req) ->
   catch
     _:Exception ->
       ErrorMsg = "error trying to check auth: ~p~n\tStack: ~p~n",
-      lager:error(ErrorMsg, [Exception, erlang:get_stacktrace()]),
+      lager:warning(ErrorMsg, [Exception, erlang:get_stacktrace()]),
       throw(Exception)
   end.

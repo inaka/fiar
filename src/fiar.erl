@@ -16,7 +16,7 @@
         , get_match/2
         , get_matches/1
         , new_user/1
-        , find_by_username/1
+        , find_user/1
         ]).
 
 -spec start() -> ok | {error, term()}.
@@ -25,20 +25,7 @@ start() ->
   sumo:create_schema().
 
 -spec stop() -> ok | {error, term()}.
-stop() ->
-  application:stop(fiar),
-  application:stop(cowboy),
-  application:stop(ranch),
-  application:stop(cowlib),
-  application:stop(sumo_db),
-  application:stop(emysql),
-  application:stop(crypto),
-  application:stop(worker_pool),
-  application:stop(lager),
-  application:stop(goldrush),
-  application:stop(compiler),
-  application:stop(syntax_tools),
-  application:stop(sasl).
+stop() -> application:stop(fiar).
 
 -spec start(atom(), any()) -> {ok, pid()} | {error, any()}.
 start(normal, _Args) ->
@@ -50,7 +37,7 @@ start(normal, _Args) ->
 stop(_State) ->
   ok.
 
--spec start_match(player(), player()) -> match().
+-spec start_match(player(), player()) -> fiar_match:match().
 start_match(User1, User2) ->
   fiar_match_repo:start(User1, User2).
 
@@ -61,9 +48,7 @@ new_user(Username) ->
 -spec play(match(), fiar_core:col(), fiar_user:user()) -> won | drawn | next.
 play(Mid, Col, User) ->
   try
-    Result = fiar_match_repo:play(Mid, Col, User),
-    lager:info("result: ~p", [Result]),
-    Result
+    fiar_match_repo:play(Mid, Col, User)
   catch
     Ex -> throw(Ex)
   end.
@@ -74,13 +59,8 @@ get_match(MatchId, User) ->
 get_matches(User) ->
   fiar_match_repo:get_matches(User).
 
-find_by_username(Username) ->
-  case fiar_user_repo:find_by_username(Username) of
-    notfound ->
-          throw(bad_request);
-    User -> 
-          User
-  end.
+find_user(Username) ->
+  fiar_user_repo:find_by_username(Username).
 
 start_cowboy_listeners() ->
   Dispatch = cowboy_router:compile([

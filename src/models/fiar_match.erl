@@ -7,7 +7,6 @@
 %%% Public API
 -export(
   [ new/2
-  , get_id/1
   , get_player1/1
   , get_player2/1
   , get_state/1
@@ -17,9 +16,13 @@
   , set_state/2
   , set_updated_at/1
   , to_json/1
-  , match_list_to_json/1
+  , matches_to_json/1
   , is_player/2
   ]).
+
+-type match() :: proplists:proplist().
+-export_type([match/0]).
+
 %%% Behaviour callbacks.
 -export([sumo_schema/0, sumo_wakeup/1, sumo_sleep/1]).
 
@@ -28,13 +31,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sumo_schema() ->
   sumo:new_schema(?MODULE,
-    [ sumo:new_field(id,            integer,      [id, not_null, auto_increment])
-    , sumo:new_field(player1,       integer,      [not_null])
-    , sumo:new_field(player2,       integer,      [not_null])
-    , sumo:new_field(status,        string,       [{length, 255}, not_null])
-    , sumo:new_field(state,         binary,       [not_null])
-    , sumo:new_field(created_at,    datetime,     [not_null])
-    , sumo:new_field(updated_at,    datetime,     [not_null])
+    [ sumo:new_field(id,            integer,     [id, not_null, auto_increment])
+    , sumo:new_field(player1,       integer,     [not_null])
+    , sumo:new_field(player2,       integer,     [not_null])
+    , sumo:new_field(status,        string,      [{length, 255}, not_null])
+    , sumo:new_field(state,         binary,      [not_null])
+    , sumo:new_field(created_at,    datetime,    [not_null])
+    , sumo:new_field(updated_at,    datetime,    [not_null])
     ]).
 
 sumo_sleep(Match) ->
@@ -71,8 +74,6 @@ new(Player1, Player2) ->
   , {created_at,  Now}
   , {updated_at,  Now}].
 
-get_id(Match) -> proplists:get_value(id, Match).
-
 get_player(Match) ->
   State = get_state(Match),
   case fiar_core:get_current_chip(State) of
@@ -101,25 +102,13 @@ is_player(Uid, Match) ->
     {_, _} -> false
   end.
 
-match_list_to_json(Matches) ->
+matches_to_json(Matches) ->
   lists:map(fun to_json/1, Matches).
 
 to_json(Match) ->
   { [to_json_attr(K, V) || {K, V} <- Match] }.
 
 to_json_attr(status, Atom) -> {status, atom_to_binary(Atom, utf8)};
-to_json_attr(K, {datetime, DT}) -> {K, datetime_to_json(DT)};
+to_json_attr(K, {datetime, DT}) -> {K, fiar_utils:datetime_to_json(DT)};
 to_json_attr(state, BoardState) -> {state, fiar_core:to_json(BoardState)};
 to_json_attr(K, V) -> {K, V}.
-
--spec datetime_to_json(choosy_utils:datetime()) ->
-  binary().
-%% @doc Converts a datetime record into a binary representation of its data.
-datetime_to_json({{Yi,Mi,Di},{Hi,Ni,Si}}) ->
-  Y = integer_to_list(Yi),
-  M = integer_to_list(Mi),
-  D = integer_to_list(Di),
-  H = integer_to_list(Hi),
-  N = integer_to_list(Ni),
-  S = integer_to_list(Si),
-  iolist_to_binary([Y,"-",M,"-",D,"T",H,":",N,":",S,".000000Z"]).

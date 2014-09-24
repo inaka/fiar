@@ -42,7 +42,7 @@ is_authorized(Req, State) ->
 
 handle_get(Req, State) ->
   Matches = fiar:get_matches(maps:get(user, State)),
-  MatchJson = fiar_match:match_list_to_json(Matches),
+  MatchJson = fiar_match:matches_to_json(Matches),
   RespBody = jiffy:encode(MatchJson),
   {RespBody, Req, State}.
 
@@ -52,9 +52,12 @@ handle_post(Req, State) ->
     Decoded = jiffy:decode(Body, [return_maps]),
     Username = maps:get(<<"player2">>, Decoded),
     User1 = maps:get(user, State),
-    User2 = fiar:find_by_username(Username),
-    Mid = fiar:start_match(User1, User2),
-    Match = fiar:get_match(Mid, User1),
+    User2 =
+      case fiar:find_user(Username) of
+        notfound -> throw(rival_notfound);
+        FoundUser -> FoundUser
+      end,
+    Match = fiar:start_match(User1, User2),
     MatchJson = fiar_match:to_json(Match),
     RespBody = jiffy:encode(MatchJson),
     Req2 = cowboy_req:set_resp_body(RespBody, Req1),

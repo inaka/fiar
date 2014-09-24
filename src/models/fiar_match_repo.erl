@@ -53,12 +53,12 @@ new_status(drawn, _State) -> drawn.
 
 get_match(Mid, User) ->
   case sumo:find(fiar_match, Mid) of
-    notfound -> throw({notfound, Mid});
-    M ->
+    notfound -> throw(notfound);
+    Match ->
       UserId = fiar_user:get_id(User),
-      case fiar_match:is_player(UserId, M) of
-        true -> M;
-        false -> throw({notfound, Mid})
+      case fiar_match:is_player(UserId, Match) of
+        true -> Match;
+        false -> throw(notfound)
       end
   end.
 

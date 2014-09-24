@@ -17,7 +17,7 @@ check_auth(Req) ->
   case current_user(Req) of
     undefined ->
       {not_authenticated, ?AUTH_HEADER, Req};
-    not_found ->
+    notfound ->
       {not_authenticated, ?AUTH_HEADER, Req};
     User ->
       {authenticated, User, Req}

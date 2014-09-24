@@ -26,13 +26,14 @@ create(Username) ->
           throw(conflict)
   end.
 
--spec get(string(), string()) -> not_found | user().
+-spec get(string(), string()) -> notfound | user().
 get(Username, Pass) ->
   case sumo:find_by(fiar_user, [{username, Username}, {pass, Pass}]) of
-    []     -> not_found;
+    []     -> notfound;
     [User] -> User
   end.
 
+-spec find_by_username(binary()) -> notfound | user().
 find_by_username(Username) ->
   case sumo:find_by(fiar_user, [{username, Username}]) of
     [User] -> User;

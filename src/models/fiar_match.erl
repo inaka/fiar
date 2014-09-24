@@ -16,7 +16,7 @@
   , set_state/2
   , set_updated_at/1
   , to_json/1
-  , match_list_to_json/1
+  , matches_to_json/1
   , is_player/2
   ]).
 %%% Behaviour callbacks.
@@ -98,7 +98,7 @@ is_player(Uid, Match) ->
     {_, _} -> false
   end.
 
-match_list_to_json(Matches) ->
+matches_to_json(Matches) ->
   lists:map(fun to_json/1, Matches).
 
 to_json(Match) ->

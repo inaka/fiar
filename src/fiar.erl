@@ -16,7 +16,7 @@
         , get_match/2
         , get_matches/1
         , new_user/1
-        , find_by_username/1
+        , find_user/1
         ]).
 
 -spec start() -> ok | {error, term()}.

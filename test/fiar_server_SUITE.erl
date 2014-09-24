@@ -60,6 +60,8 @@
         , complete_coverage/1
         , invalid/1
         , drawn/1
+        , forbidden_move/1
+        , match_finished/1
         ]).
 
 -spec all() -> [atom()].
@@ -79,6 +81,8 @@ init_per_testcase(wins_horizontally, Config) -> authenticated(Config);
 init_per_testcase(wins_right_diagonally, Config) -> authenticated(Config);
 init_per_testcase(wins_left_diagonally, Config) -> authenticated(Config);
 init_per_testcase(invalid, Config) -> authenticated(Config);
+init_per_testcase(forbidden_move, Config) -> authenticated(Config);
+init_per_testcase(match_finished, Config) -> authenticated(Config);
 init_per_testcase(drawn, Config) -> authenticated(Config);
 init_per_testcase(start, Config) -> authenticated(Config).
 
@@ -429,6 +433,43 @@ wins_left_diagonally(Config) ->
   <<"won_by_player2">> = maps:get(<<"status">>, BodyDecode),
   ok.
 
+-spec match_finished(config()) -> ok.
+match_finished(Config) ->
+  %% First, let's finish a match...
+  ok = wins_vertically(Config),
+
+  %% Now, let's try to keep playing...
+  Mid = proplists:get_value(match_id, Config),
+  Player1 = proplists:get_value(username, Config),
+  Player2 = proplists:get_value(username2, Config),
+  Pass1 = proplists:get_value(pass, Config),
+  Pass2 = proplists:get_value(pass2, Config),
+  Headers1 = #{<<"content-type">> => <<"application/json">>,
+              basic_auth => {Player1, Pass1}},
+  Headers2 = #{<<"content-type">> => <<"application/json">>,
+              basic_auth => {Player2, Pass2}},
+  MoveBody = jiffy:encode(#{column => 1}),
+
+  {ok, #{status_code := 400}} =
+    api_call(put, "/matches/" ++ Mid, Headers1, MoveBody),
+  {ok, #{status_code := 400}} =
+    api_call(put, "/matches/" ++ Mid, Headers2, MoveBody),
+  ok.
+
+-spec forbidden_move(config()) -> ok.
+forbidden_move(Config) ->
+  Mid = proplists:get_value(match_id, Config),
+  Player1 = proplists:get_value(username, Config),
+  Pass1 = proplists:get_value(pass, Config),
+  Headers1 = #{<<"content-type">> => <<"application/json">>,
+              basic_auth => {Player1, Pass1}},
+  MoveBody = jiffy:encode(#{column => 1}),
+  {ok, #{status_code := 200}} =
+    api_call(put, "/matches/" ++ Mid, Headers1, MoveBody),
+  {ok, #{status_code := 403}} =
+    api_call(put, "/matches/" ++ Mid, Headers1, MoveBody),
+  ok.
+
 -spec invalid(config()) -> ok.
 invalid(Config) ->
   Mid = proplists:get_value(match_id, Config),
@@ -444,10 +485,10 @@ invalid(Config) ->
     drop_chips([1, 1, 1, 1, 1, 1, 1], Mid, [Headers1, Headers2]),
   MoveBody = jiffy:encode(#{column => 1}),
   {ok, #{status_code := 400}} =
-  api_call(put, "/matches/" ++ Mid, Headers2, MoveBody),
+    api_call(put, "/matches/" ++ Mid, Headers2, MoveBody),
   MoveBody1 = jiffy:encode(#{column => 9}),
   {ok, #{status_code := 400}} =
-  api_call(put, "/matches/" ++ Mid, Headers2, MoveBody1),
+    api_call(put, "/matches/" ++ Mid, Headers2, MoveBody1),
   ok.
 
 -spec drawn(_Config) -> ok.

@@ -2,16 +2,18 @@
 {
  incl_mods,
  [
-  fiar_core,
   fiar_match,
-  fiar_sup,
-  fiar,
-  fiar_matches_handler,
-  fiar_single_match_handler,
+  fiar_match_repo,
   fiar_user,
   fiar_user_repo,
+  fiar,
+  fiar_auth,
+  fiar_core,
+  fiar_sup,
+  fiar_matches_handler,
+  fiar_single_match_handler,
+  fiar_sup,
   fiar_users_handler,
-  fiar_utils,
-  fiar_auth
+  fiar_utils
  ]
 }.

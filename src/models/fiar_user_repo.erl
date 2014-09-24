@@ -19,11 +19,10 @@
 create(Username) ->
   case find_by_username(Username) of
     notfound -> 
-          NewUser = fiar_user:new(Username),
-          lager:info("User previous to save: ~p", [NewUser]),
-          sumo:persist(fiar_user, NewUser);
+      NewUser = fiar_user:new(Username),
+      sumo:persist(fiar_user, NewUser);
     _User ->
-          throw(conflict)
+      throw(conflict)
   end.
 
 -spec get(string(), string()) -> notfound | user().

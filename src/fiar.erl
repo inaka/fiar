@@ -48,9 +48,7 @@ new_user(Username) ->
 -spec play(match(), fiar_core:col(), fiar_user:user()) -> won | drawn | next.
 play(Mid, Col, User) ->
   try
-    Result = fiar_match_repo:play(Mid, Col, User),
-    lager:info("result: ~p", [Result]),
-    Result
+    fiar_match_repo:play(Mid, Col, User)
   catch
     Ex -> throw(Ex)
   end.

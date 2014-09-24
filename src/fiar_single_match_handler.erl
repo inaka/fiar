@@ -35,9 +35,9 @@ content_types_provided(Req, State) ->
 is_authorized(Req, State) ->
   case fiar_auth:check_auth(Req) of
     {authenticated, User, _Req1} ->
-        {true, Req, #{user => User}};
+      {true, Req, #{user => User}};
     {not_authenticated, AuthHeader, Req1} ->
-        {{false, AuthHeader}, Req1, State}
+      {{false, AuthHeader}, Req1, State}
   end.
 
 handle_get(Req, State) ->
@@ -48,9 +48,9 @@ handle_get(Req, State) ->
     RespBody = jiffy:encode(MatchJson),
     {RespBody, Req1, State}
   catch
-    throw:{notfound, Mid} ->
-            lager:info("Invalid ID: ~p~n", [Mid]),
-            fiar_utils:handle_exception(not_found, Req1, State)
+    _:Exception ->
+      lager:warning("Exception in GET: ~p~n", [Exception]),
+      fiar_utils:handle_exception(Exception, Req1, State)
   end.
 
 handle_put(Req, State) ->
@@ -67,10 +67,7 @@ handle_put(Req, State) ->
     Req3 = cowboy_req:set_resp_body(RespBody, Req2),
     {true, Req3, State}
   catch
-    throw:{notfound, Mid} ->
-            lager:info("Invalid ID: ~p~n", [Mid]),
-            fiar_utils:handle_exception(not_found, Req1, State);
     _:Exception ->
-            lager:info("Exception in PUT: ~p~n", [Exception]),
-            fiar_utils:handle_exception(Exception, Req1, State)
+      lager:warning("Exception in PUT: ~p~n", [Exception]),
+      fiar_utils:handle_exception(Exception, Req1, State)
   end.

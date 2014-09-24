@@ -61,6 +61,6 @@ handle_post(Req, State) ->
     {true, Req2, State}
   catch
     _:Exception ->
-      lager:info("Exception in POST: ~p~n", [Exception]),
+      lager:warning("Exception in POST: ~p~n", [Exception]),
       fiar_utils:handle_exception(Exception, Req1, State)
   end.

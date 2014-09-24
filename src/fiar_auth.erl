@@ -40,6 +40,6 @@ credentials(Req) ->
   catch
     _:Exception ->
       ErrorMsg = "error trying to check auth: ~p~n\tStack: ~p~n",
-      lager:error(ErrorMsg, [Exception, erlang:get_stacktrace()]),
+      lager:warning(ErrorMsg, [Exception, erlang:get_stacktrace()]),
       throw(Exception)
   end.

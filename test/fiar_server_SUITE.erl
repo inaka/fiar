@@ -491,7 +491,7 @@ invalid(Config) ->
     api_call(put, "/matches/" ++ Mid, Headers2, MoveBody1),
   ok.
 
--spec drawn(_Config) -> ok.
+-spec drawn(config()) -> ok.
 drawn(Config) ->
   Mid = proplists:get_value(match_id, Config),
   Player1 = proplists:get_value(username, Config),

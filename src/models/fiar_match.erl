@@ -7,7 +7,6 @@
 %%% Public API
 -export(
   [ new/2
-  , get_id/1
   , get_player1/1
   , get_player2/1
   , get_state/1
@@ -70,8 +69,6 @@ new(Player1, Player2) ->
   , {state,       State}
   , {created_at,  Now}
   , {updated_at,  Now}].
-
-get_id(Match) -> proplists:get_value(id, Match).
 
 get_player(Match) ->
   State = get_state(Match),

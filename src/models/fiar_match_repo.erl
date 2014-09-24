@@ -5,7 +5,7 @@
                 | {next_player, fiar_match:player()}.
 -export_type([status/0]).
 
--export([start/2, get_match/2, play/3, status/2, get_matches/1]).
+-export([start/2, get_match/2, play/3, get_matches/1]).
 
 start(User1, User2) ->
   Player1 = fiar_user:get_id(User1),
@@ -40,18 +40,7 @@ play(Mid, Col, User) ->
       catch
         _:Ex -> throw(Ex)
       end;
-    Status -> throw({match_finished, Status})
-  end.
-
-status(Mid, User) ->
-  Match = get_match(Mid, User),
-  Status = fiar_match:get_status(Match),
-  case Status of
-    on_course -> {next_player, fiar_match:get_player(Match)};
-    won_by_player1 -> {won_by, fiar_match:get_player1(Match)};
-    won_by_player2 -> {won_by, fiar_match:get_player2(Match)};
-    drawn -> drawn;
-    Status -> throw({invalid_status, Status})
+    Status -> throw(match_finished)
   end.
 
 %% @private

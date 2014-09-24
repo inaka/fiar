@@ -25,20 +25,7 @@ start() ->
   sumo:create_schema().
 
 -spec stop() -> ok | {error, term()}.
-stop() ->
-  application:stop(fiar),
-  application:stop(cowboy),
-  application:stop(ranch),
-  application:stop(cowlib),
-  application:stop(sumo_db),
-  application:stop(emysql),
-  application:stop(crypto),
-  application:stop(worker_pool),
-  application:stop(lager),
-  application:stop(goldrush),
-  application:stop(compiler),
-  application:stop(syntax_tools),
-  application:stop(sasl).
+stop() -> application:stop(fiar).
 
 -spec start(atom(), any()) -> {ok, pid()} | {error, any()}.
 start(normal, _Args) ->

@@ -21,8 +21,8 @@ create(Username) ->
     notfound -> 
           NewUser = fiar_user:new(Username),
           lager:info("User previous to save: ~p", [NewUser]),
-          StoredUser = sumo:persist(fiar_user, NewUser);
-    User ->
+          sumo:persist(fiar_user, NewUser);
+    _User ->
           throw(conflict)
   end.
 

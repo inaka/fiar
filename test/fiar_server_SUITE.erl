@@ -440,7 +440,7 @@ invalid(Config) ->
               basic_auth => {Player1, Pass1}},
   Headers2 = #{<<"content-type">> => <<"application/json">>,
               basic_auth => {Player2, Pass2}},
-  {ok, #{status_code := 200, body := RespBody}} =
+  {ok, #{status_code := 200}} =
     drop_chips([1, 1, 1, 1, 1, 1, 1], Mid, [Headers1, Headers2]),
   MoveBody = jiffy:encode(#{column => 1}),
   {ok, #{status_code := 400}} =

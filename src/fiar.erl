@@ -6,7 +6,6 @@
 -type user() :: fiar_user_repo:user().
 -type player() :: fiar_match:player().
 -type username() :: fiar_user:username().
--type status() :: fiar_match_repo:status().
 
 -export([ start/0
         , stop/0

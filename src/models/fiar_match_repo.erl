@@ -11,9 +11,7 @@ start(User1, User2) ->
   Player1 = fiar_user:get_id(User1),
   Player2 = fiar_user:get_id(User2),
   Match = fiar_match:new(Player1, Player2),
-  lager:info("Match Previous to save: ~p", [Match]),
-  StoredMatch = sumo:persist(fiar_match, Match),
-  fiar_match:get_id(StoredMatch).
+  sumo:persist(fiar_match, Match).
 
 play(Mid, Col, User) ->
   Match = get_match(Mid, User),

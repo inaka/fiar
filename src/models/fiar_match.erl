@@ -19,6 +19,10 @@
   , matches_to_json/1
   , is_player/2
   ]).
+
+-type match() :: proplists:proplist().
+-export_type([match/0]).
+
 %%% Behaviour callbacks.
 -export([sumo_schema/0, sumo_wakeup/1, sumo_sleep/1]).
 
@@ -27,13 +31,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sumo_schema() ->
   sumo:new_schema(?MODULE,
-    [ sumo:new_field(id,            integer,      [id, not_null, auto_increment])
-    , sumo:new_field(player1,       integer,      [not_null])
-    , sumo:new_field(player2,       integer,      [not_null])
-    , sumo:new_field(status,        string,       [{length, 255}, not_null])
-    , sumo:new_field(state,         binary,       [not_null])
-    , sumo:new_field(created_at,    datetime,     [not_null])
-    , sumo:new_field(updated_at,    datetime,     [not_null])
+    [ sumo:new_field(id,            integer,     [id, not_null, auto_increment])
+    , sumo:new_field(player1,       integer,     [not_null])
+    , sumo:new_field(player2,       integer,     [not_null])
+    , sumo:new_field(status,        string,      [{length, 255}, not_null])
+    , sumo:new_field(state,         binary,      [not_null])
+    , sumo:new_field(created_at,    datetime,    [not_null])
+    , sumo:new_field(updated_at,    datetime,    [not_null])
     ]).
 
 sumo_sleep(Match) ->

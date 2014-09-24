@@ -37,7 +37,7 @@ start(normal, _Args) ->
 stop(_State) ->
   ok.
 
--spec start_match(player(), player()) -> match().
+-spec start_match(player(), player()) -> fiar_match:match().
 start_match(User1, User2) ->
   fiar_match_repo:start(User1, User2).
 

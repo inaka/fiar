@@ -16,25 +16,24 @@ start(User1, User2) ->
 play(Mid, Col, User) ->
   Match = get_match(Mid, User),
   UserId = fiar_user:get_id(User),
-  case fiar_match:get_player(Match) of
-    UserId -> ok;
-    _OtherPlayer -> throw(invalid_player)
-  end,
-  Status = fiar_match:get_status(Match),
-  case Status of
+  case fiar_match:get_status(Match) of
     on_course -> 
+      case fiar_match:get_player(Match) of
+        UserId -> ok;
+        _OtherPlayer -> throw(invalid_player)
+      end,
       try
         State = fiar_match:get_state(Match),
         {Reply, NewStatus, NewState} =
           case fiar_core:play(Col, State) of
-            {Result, St} -> {Result, Status, St};
+            {Result, St} -> {Result, on_course, St};
             Result -> {Result, new_status(Result, State), State}
           end,
-          NewMatch0 = fiar_match:set_status(Match, NewStatus),
-          NewMatch2 = fiar_match:set_state(NewMatch0, NewState),
-          NewMatch3 = fiar_match:set_updated_at(NewMatch2),
-          sumo:persist(fiar_match, NewMatch3),
-          Reply
+        NewMatch0 = fiar_match:set_status(Match, NewStatus),
+        NewMatch2 = fiar_match:set_state(NewMatch0, NewState),
+        NewMatch3 = fiar_match:set_updated_at(NewMatch2),
+        sumo:persist(fiar_match, NewMatch3),
+        Reply
       catch
         _:Ex -> throw(Ex)
       end;

@@ -37,7 +37,7 @@ play(Mid, Col, User) ->
       catch
         _:Ex -> throw(Ex)
       end;
-    Status -> throw(match_finished)
+    _Status -> throw(match_finished)
   end.
 
 %% @private

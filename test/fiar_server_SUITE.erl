@@ -62,6 +62,7 @@
         , drawn/1
         , forbidden_move/1
         , match_finished/1
+        , notification_of_move/1
         ]).
 
 -spec all() -> [atom()].
@@ -84,6 +85,7 @@ init_per_testcase(invalid, Config) -> authenticated(Config);
 init_per_testcase(forbidden_move, Config) -> authenticated(Config);
 init_per_testcase(match_finished, Config) -> authenticated(Config);
 init_per_testcase(drawn, Config) -> authenticated(Config);
+init_per_testcase(notification_of_move, Config) -> authenticated(Config);
 init_per_testcase(start, Config) -> authenticated(Config).
 
 basic(Config) ->
@@ -515,7 +517,37 @@ drawn(Config) ->
   BodyDecode = jiffy:decode(RespBody, [return_maps]),
   <<"drawn">> = maps:get(<<"status">>, BodyDecode),
   ok.
-  
+
+-spec notification_of_move(config()) -> ok.
+notification_of_move(Config) ->
+  Mid = proplists:get_value(match_id, Config),
+  Player1 = proplists:get_value(username, Config),
+  Player2 = proplists:get_value(username2, Config),
+  Pass1 = proplists:get_value(pass, Config),
+  Pass2 = proplists:get_value(pass2, Config),
+  Headers = #{<<"content-type">> => <<"text/event-stream">>,
+              <<"cache-control">> => <<"no-cache">>,
+              basic_auth => {Player1, Pass1}},
+  Headers2 = #{<<"content-type">> => <<"text/event-stream">>,
+              <<"cache-control">> => <<"no-cache">>,
+              basic_auth => {Player2, Pass2}},
+  Body = jiffy:encode(#{column => 1}),
+  {ok, Pid} = shotgun:open("localhost", 8080),
+  try
+    {ok, Ref} = shotgun:get( Pid
+                           , "matches/" ++ Mid ++ "/events"
+                           , Headers2
+                           , #{async => true}),
+    timer:sleep(300),
+    shotgun:put(Pid, "matches/" ++ Mid, Headers, Body, #{}),
+    timer:sleep(300),
+    shotgun:events(Ref)
+  catch
+    _:Ex -> {error, Ex}
+  after
+    shotgun:close(Pid)
+  end.
+
 -spec complete_coverage(config()) -> ok.
 complete_coverage(_Config) ->
   try fiar_auth:credentials(bad_attribute) of

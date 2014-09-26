@@ -531,21 +531,34 @@ notification_of_move(Config) ->
                basic_auth => {Player2, Pass2}},
   Body = jiffy:encode(#{column => 1}),
   {ok, Pid1} = shotgun:open("localhost", 8080),
+  {ok, Pid2} = shotgun:open("localhost", 8080),
   try
     {ok, _Ref} = shotgun:get( Pid1
-                           , "/matches/" ++ Mid ++ "/events"
-                           , Headers2
-                           , #{async => true,
-                               async_mode => sse}),
-    timer:sleep(300),
+                            , "/matches/" ++ Mid ++ "/events"
+                            , Headers2
+                            , #{async => true,
+                                async_mode => sse}),
     api_call(put, "/matches/" ++ Mid, Headers, Body),
     timer:sleep(300),
-    [{_, _, EventBin}] = shotgun:events(Pid1),
-    <<"players_move">> = maps:get(event, shotgun:parse_event(EventBin))
+    {ok, _Ref1} = shotgun:get( Pid2
+                            , "/matches/" ++ Mid ++ "/events"
+                            , Headers
+                            , #{async => true,
+                                async_mode => sse}),
+    api_call(put, "/matches/" ++ Mid, Headers2, Body),
+    timer:sleep(300),
+    [{_, _, EventBin2}] = shotgun:events(Pid2),
+    <<"players_move">> = maps:get(event, shotgun:parse_event(EventBin2)),
+    api_call(put, "/matches/" ++ Mid, Headers, Body),
+    timer:sleep(300),
+    [{ _, _, EventBin3 }, { _, _, EventBin4 }] = shotgun:events(Pid1),
+    <<"players_move">> = maps:get(event, shotgun:parse_event(EventBin3)),
+    <<"players_move">> = maps:get(event, shotgun:parse_event(EventBin4))
   catch
     _:Ex -> {error, Ex}
   after
-    shotgun:close(Pid1)
+    shotgun:close(Pid1),
+    shotgun:close(Pid2)
   end.
 
 -spec complete_coverage(config()) -> ok.

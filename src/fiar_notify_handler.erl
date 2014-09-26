@@ -14,12 +14,19 @@ init(_InitArgs, _LastEventId, Req) ->
     {authenticated, User, Req1} ->
       {MatchId, Req2} =  cowboy_req:binding(match_id, Req1),
       UserId = fiar_user:get_id(User),
-      Name = lists:flatten(io_lib:format("fiar_player_~s_~p", [MatchId, UserId])),
+      Name = 
+        lists:flatten(io_lib:format("fiar_player_~s_~p", [MatchId, UserId])),
       Process = list_to_atom(Name), 
-      erlang:register(Process, self()),
-      {ok, Req2, #{user => User}};
+      case whereis(Process) of 
+        undefined -> 
+          erlang:register(Process, self()),
+          lager:info("Authenticated!!!!!! ~p~n", [Process]),
+          {ok, Req2, #{user => User}};
+        _ -> {ok, Req2, #{user => User}}
+      end;
     {not_authenticated, _AuthHeader, Req1} ->
-        {shutdown, 403, [], [], Req1, #{}}
+      lager:info("not_authenticated!!!!!!"),
+      {shutdown, 403, [], [], Req1, #{}}
   end.
 
 handle_notify(Msg, State) ->

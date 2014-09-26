@@ -70,7 +70,7 @@ handle_put(Req, State) ->
     Rival = integer_to_list(fiar_match:get_player(Match)),
     Process = 
       list_to_atom("fiar_player_" ++ integer_to_list(MatchId) ++ "_" ++ Rival),
-
+    lager:info("Process -->~p~n", [Process]),
     case whereis(Process) of
       undefined ->
         ok;
@@ -80,5 +80,6 @@ handle_put(Req, State) ->
     {true, Req3, State}
   catch
     _:Exception ->
+      lager:warning("Exception in PUT: ~p~n", [Exception]),
       fiar_utils:handle_exception(Exception, Req1, State)
   end.

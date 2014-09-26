@@ -525,32 +525,32 @@ notification_of_move(Config) ->
   Player2 = proplists:get_value(username2, Config),
   Pass1 = proplists:get_value(pass, Config),
   Pass2 = proplists:get_value(pass2, Config),
-  Headers = #{<<"content-type">> => <<"text/event-stream">>,
-              <<"cache-control">> => <<"no-cache">>,
+  Headers = #{<<"content-type">> => <<"application/json">>,
               basic_auth => {Player1, Pass1}},
-  Headers2 = #{<<"content-type">> => <<"text/event-stream">>,
-              <<"cache-control">> => <<"no-cache">>,
-              basic_auth => {Player2, Pass2}},
+  Headers2 = #{<<"content-type">> => <<"application/json">>,
+               basic_auth => {Player2, Pass2}},
   Body = jiffy:encode(#{column => 1}),
-  {ok, Pid} = shotgun:open("localhost", 8080),
+  {ok, Pid1} = shotgun:open("localhost", 8080),
   try
-    {ok, Ref} = shotgun:get( Pid
-                           , "matches/" ++ Mid ++ "/events"
+    {ok, _Ref} = shotgun:get( Pid1
+                           , "/matches/" ++ Mid ++ "/events"
                            , Headers2
-                           , #{async => true}),
+                           , #{async => true,
+                               async_mode => sse}),
     timer:sleep(300),
-    shotgun:put(Pid, "matches/" ++ Mid, Headers, Body, #{}),
+    api_call(put, "/matches/" ++ Mid, Headers, Body),
     timer:sleep(300),
-    shotgun:events(Ref)
+    [{_, _, EventBin}] = shotgun:events(Pid1),
+    <<"players_move">> = maps:get(event, shotgun:parse_event(EventBin))
   catch
     _:Ex -> {error, Ex}
   after
-    shotgun:close(Pid)
+    shotgun:close(Pid1)
   end.
 
 -spec complete_coverage(config()) -> ok.
 complete_coverage(_Config) ->
-  try fiar_auth:credentials(bad_attribute) of
+  try fiar_auth:credentials({bad_attribute}) of
     Credentials -> throw({error, Credentials})
   catch
     _ -> ok

@@ -76,7 +76,7 @@ new(Player1, Player2) ->
 
 get_player(Match) ->
   State = get_state(Match),
-  case fiar_core:get_current_chip(State) of
+  case fiar_core:get_next_chip(State) of
     1 -> get_player1(Match);
     2 -> get_player2(Match)
   end.

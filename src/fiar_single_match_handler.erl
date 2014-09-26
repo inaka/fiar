@@ -54,20 +54,31 @@ handle_get(Req, State) ->
   end.
 
 handle_put(Req, State) ->
-  {MatchIdBin, Req1} =  cowboy_req:binding(match_id, Req),
+  {MatchIdBin, Req1} = cowboy_req:binding(match_id, Req),
   try 
     MatchId = binary_to_integer(MatchIdBin, 10),
     {ok, Body, Req2} =  cowboy_req:body(Req1),
     Col = maps:get(<<"column">>, jiffy:decode(Body, [return_maps])),
     User = maps:get(user, State),
     fiar:play(MatchId, Col, User),
+    
     Match = fiar:get_match(MatchId, User),
     MatchJson = fiar_match:to_json(Match),
     RespBody = jiffy:encode(MatchJson),
     Req3 = cowboy_req:set_resp_body(RespBody, Req2),
+
+    Rival = integer_to_list(fiar_match:get_player(Match)),
+    Process = 
+      list_to_atom("fiar_player_" ++ integer_to_list(MatchId) ++ "_" ++ Rival),
+
+    case whereis(Process) of
+      undefined ->
+        ok;
+      _ -> 
+        lasse_handler:notify(Process, <<"The other player played.">>)
+    end,
     {true, Req3, State}
   catch
     _:Exception ->
-      lager:warning("Exception in PUT: ~p~n", [Exception]),
       fiar_utils:handle_exception(Exception, Req1, State)
   end.

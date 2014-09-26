@@ -42,7 +42,7 @@ play(Mid, Col, User) ->
 
 %% @private
 new_status(won, State) ->
-  case fiar_core:get_current_chip(State) of
+  case fiar_core:get_next_chip(State) of
     1 -> won_by_player1;
     2 -> won_by_player2
   end;

@@ -34,9 +34,10 @@
 -module(fiar_sup_SUITE).
 -author('euen@inakanetworks.com').
 
--type config() :: [{atom(), term()}].
 -export([all/0]).
 -export([start/1]).
+
+-type config() :: [{atom(), term()}].
 
 %% @private
 -spec all() -> [atom()].

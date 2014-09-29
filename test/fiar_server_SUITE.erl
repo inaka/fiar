@@ -569,9 +569,10 @@ get_event_invalid_player(Config) ->
   Mid = proplists:get_value(match_id, Config),
   Player1 = proplists:get_value(username, Config),
   Pass1 = proplists:get_value(pass, Config),
-  Headers = #{<<"content-type">> => <<"application/json">>,
+  Headers1 = #{<<"content-type">> => <<"application/json">>,
               basic_auth => {Player1, Pass1}},
   % Create player2
+  Headers = #{<<"content-type">> => <<"application/json">>},
   Player2 = ktn_random:generate(),
   User2Body = jiffy:encode(#{username => Player2}),
   {ok, #{status_code := 200, body := User2}} =
@@ -580,22 +581,44 @@ get_event_invalid_player(Config) ->
   Pass2 = maps:get(<<"pass">>, BodyDecode2),
   Headers2 = #{<<"content-type">> => <<"application/json">>,
                basic_auth => {Player2, Pass2}},
-  % Get event with invalid id
-  {ok, Pid} = shotgun:open("localhost", 8080),
+  % Get event with invalid player
+  {ok, Pid1} = shotgun:open("localhost", 8080),
+  {ok, Pid2} = shotgun:open("localhost", 8080),
+  {ok, Pid3} = shotgun:open("localhost", 8080),
   try
-    shotgun:get( Pid
+    shotgun:get( Pid1
                , "/matches/" ++ Mid ++ "/events"
                , Headers2
                , #{ async => true
                   , async_mode => sse}),
     timer:sleep(500),
-    [Status] = shotgun:events(Pid),
-    403 = maps:get(status_code, Status),
+    [Status1] = shotgun:events(Pid1),
+    400 = maps:get(status_code, Status1),
+    % Get event with invalid id
+    shotgun:get( Pid2
+               , "/matches/123456/events"
+               , Headers1
+               , #{ async => true
+                  , async_mode => sse}),
+    timer:sleep(500),
+    [Status2] = shotgun:events(Pid2),
+    400 = maps:get(status_code, Status2),
+    % Get event with player not authenticated
+    shotgun:get( Pid3
+               , "/matches/" ++ Mid ++ "/events"
+               , Headers
+               , #{ async => true
+                  , async_mode => sse}),
+    timer:sleep(500),
+    [Status3] = shotgun:events(Pid3),
+    401 = maps:get(status_code, Status3),
     ok
   catch
     _:Ex -> {error, Ex}
   after
-    shotgun:close(Pid)
+    shotgun:close(Pid1),
+    shotgun:close(Pid2),
+    shotgun:close(Pid3)
   end.
 
 -spec complete_coverage(config()) -> ok.

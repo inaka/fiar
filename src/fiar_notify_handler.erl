@@ -24,12 +24,12 @@ init(_InitArgs, _LastEventId, Req) ->
         end,
         {ok, Req2, #{user => User}};
       {not_authenticated, _AuthHeader, Req1} ->
-        {shutdown, 403, [], [], Req1, #{}}
+        {shutdown, 401, [], [], Req1, #{}}
     end
   catch
     _:Exception -> 
       lager:warning("Exception in lasse_handler GET: ~p~n", [Exception]),
-      {shutdown, 403, [], [], Req, #{}}
+      {shutdown, 400, [], [], Req, #{}}
   end.
 
 handle_notify(Msg, State) ->

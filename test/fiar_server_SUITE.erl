@@ -63,6 +63,7 @@
         , forbidden_move/1
         , match_finished/1
         , notification_of_move/1
+        , get_event_invalid_player/1
         ]).
 
 -spec all() -> [atom()].
@@ -86,6 +87,7 @@ init_per_testcase(forbidden_move, Config) -> authenticated(Config);
 init_per_testcase(match_finished, Config) -> authenticated(Config);
 init_per_testcase(drawn, Config) -> authenticated(Config);
 init_per_testcase(notification_of_move, Config) -> authenticated(Config);
+init_per_testcase(get_event_invalid_player, Config) -> authenticated(Config);
 init_per_testcase(start, Config) -> authenticated(Config).
 
 basic(Config) ->
@@ -559,6 +561,41 @@ notification_of_move(Config) ->
   after
     shotgun:close(Pid1),
     shotgun:close(Pid2)
+  end.
+
+-spec get_event_invalid_player(config()) -> ok.
+get_event_invalid_player(Config) ->
+  % Get match and player1
+  Mid = proplists:get_value(match_id, Config),
+  Player1 = proplists:get_value(username, Config),
+  Pass1 = proplists:get_value(pass, Config),
+  Headers = #{<<"content-type">> => <<"application/json">>,
+              basic_auth => {Player1, Pass1}},
+  % Create player2
+  Player2 = ktn_random:generate(),
+  User2Body = jiffy:encode(#{username => Player2}),
+  {ok, #{status_code := 200, body := User2}} =
+    api_call(post, "/users", Headers, User2Body),
+  BodyDecode2 = jiffy:decode(User2, [return_maps]),
+  Pass2 = maps:get(<<"pass">>, BodyDecode2),
+  Headers2 = #{<<"content-type">> => <<"application/json">>,
+               basic_auth => {Player2, Pass2}},
+  % Get event with invalid id
+  {ok, Pid} = shotgun:open("localhost", 8080),
+  try
+    shotgun:get( Pid
+               , "/matches/" ++ Mid ++ "/events"
+               , Headers2
+               , #{ async => true
+                  , async_mode => sse}),
+    timer:sleep(500),
+    [Status] = shotgun:events(Pid),
+    403 = maps:get(status_code, Status),
+    ok
+  catch
+    _:Ex -> {error, Ex}
+  after
+    shotgun:close(Pid)
   end.
 
 -spec complete_coverage(config()) -> ok.

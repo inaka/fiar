@@ -11,7 +11,7 @@ dep_lasse = git https://github.com/inaka/lasse.git master
 dep_eper = git https://github.com/massemanet/eper.git 35636bc4de07bc803ea4fc9731fab005d0378c2b
 
 dep_katana = git https://github.com/inaka/erlang-katana master
-dep_shotgun = git https://github.com/inaka/shotgun 0.1.1
+dep_shotgun = git https://github.com/inaka/shotgun 0.1.2
 
 include erlang.mk
 

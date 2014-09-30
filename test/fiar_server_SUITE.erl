@@ -64,6 +64,7 @@
         , match_finished/1
         , notification_of_move/1
         , get_event_invalid_player/1
+        , get_event_invalid_match/1
         ]).
 
 -spec all() -> [atom()].
@@ -88,6 +89,7 @@ init_per_testcase(match_finished, Config) -> authenticated(Config);
 init_per_testcase(drawn, Config) -> authenticated(Config);
 init_per_testcase(notification_of_move, Config) -> authenticated(Config);
 init_per_testcase(get_event_invalid_player, Config) -> authenticated(Config);
+init_per_testcase(get_event_invalid_match, Config) -> authenticated(Config);
 init_per_testcase(start, Config) -> authenticated(Config).
 
 basic(Config) ->
@@ -98,14 +100,14 @@ basic(Config) ->
 authenticated(Config) ->
   {ok, _} = application:ensure_all_started(shotgun),
   ok = fiar:start(),
-  %create user 1
+  % Create user 1
   Headers = #{<<"content-type">> => <<"application/json">>},
   Name1 = ktn_random:generate(),
   UserBody = jiffy:encode(#{username => Name1}),
   {ok, #{status_code := 200, body := User1}} =
     api_call(post, "/users", Headers, UserBody),
 
-  %create user 2
+  % Ccreate user 2
   Name2 = ktn_random:generate(),
   User2Body = jiffy:encode(#{username => Name2}),
   {ok, #{status_code := 200, body := User2}} =
@@ -113,7 +115,7 @@ authenticated(Config) ->
   BodyDecode2 = jiffy:decode(User2, [return_maps]),
   Pass2 = maps:get(<<"pass">>, BodyDecode2),
 
-  %create match
+  % Create match
   BodyDecode = jiffy:decode(User1, [return_maps]),
   Username = maps:get(<<"username">>, BodyDecode),
 
@@ -173,16 +175,16 @@ start(Config) ->
 
 -spec bad_credentials(config()) -> ok.
 bad_credentials(_Config) ->
-  %without auth
+  % Without auth
   Headers = #{<<"content-type">> => <<"application/json">>},  
   {ok, #{status_code := 401}} =
          api_call(get, "/matches", Headers),
-  %bad user and pass
+  % Bad user and pass
   HeadersInv = #{<<"content-type">> => <<"application/json">>,
                basic_auth => {"user", "pass"}},
   {ok, #{status_code := 401}} =
          api_call(get, "/matches", HeadersInv),
-  %crate user
+  % Crate user
   Name = ktn_random:generate(),
   UserBody = jiffy:encode(#{username => Name}),
   {ok, #{status_code := 200, body := User}} =
@@ -191,7 +193,7 @@ bad_credentials(_Config) ->
   Pass = maps:get(<<"pass">>, BodyDecode),
   Headers1 = #{<<"content-type">> => <<"application/json">>,
                basic_auth => {Name, Pass}},
-  %get match with bad id
+  % Get match with bad id
   {ok, #{status_code := 404}} =
          api_call(get, "/matches/123456", Headers1),
   {ok, #{status_code := 404}} =
@@ -271,14 +273,13 @@ get_matches(_Config) ->
 
 -spec get_status(config()) -> ok.
 get_status(_Config) ->
-  %create user
+  % Create user
   Headers = #{<<"content-type">> => <<"application/json">>},
   Name1 = ktn_random:generate(),
   UserBody = jiffy:encode(#{username => Name1}),
   {ok, #{status_code := 200, body := User}} =
     api_call(post, "/users", Headers, UserBody),
-
-  %create match
+  % Create match
   BodyDecode = jiffy:decode(User, [return_maps]),
   Username = maps:get(<<"username">>, BodyDecode),
   Pass = maps:get(<<"pass">>, BodyDecode),
@@ -287,8 +288,7 @@ get_status(_Config) ->
   Body = jiffy:encode(#{player2 => Name1}),
   {ok, #{status_code := 200, body := MatchBody}} =
     api_call(post, "/matches", Headers1, Body),
-
-  %get status
+  % Get status
   Mid =
     integer_to_list(maps:get(<<"id">>, jiffy:decode(MatchBody, [return_maps]))),
   {ok, #{status_code := 200, body := RespBody}} =
@@ -299,14 +299,13 @@ get_status(_Config) ->
 
 -spec first_play(config()) -> ok.
 first_play(_Config) ->
-  %create user
+  % Create user
   Headers = #{<<"content-type">> => <<"application/json">>},
   Name1 = ktn_random:generate(),
   UserBody = jiffy:encode(#{username => Name1}),
   {ok, #{status_code := 200, body := User}} =
     api_call(post, "/users", Headers, UserBody),
-
-  %create match
+  % Create match
   BodyDecode = jiffy:decode(User, [return_maps]),
   Username = maps:get(<<"username">>, BodyDecode),
   Pass = maps:get(<<"pass">>, BodyDecode),
@@ -315,8 +314,7 @@ first_play(_Config) ->
   Body = jiffy:encode(#{player2 => Name1}),
   {ok, #{status_code := 200, body := MatchBody}} =
     api_call(post, "/matches", Headers1, Body),
-
-  %play
+  % Play
   MatchBodyDecode = jiffy:decode(MatchBody, [return_maps]),
   Mid = integer_to_list(maps:get(<<"id">>, MatchBodyDecode)),
   MoveBody = jiffy:encode(#{column => 1}),
@@ -563,6 +561,36 @@ notification_of_move(Config) ->
     shotgun:close(Pid2)
   end.
 
+-spec get_event_invalid_match(config()) -> ok.
+get_event_invalid_match(Config) ->
+  % Get match and player1
+  Mid = proplists:get_value(match_id, Config),
+  Player1 = proplists:get_value(username, Config),
+  Pass1 = proplists:get_value(pass, Config),
+  Headers1 = #{<<"content-type">> => <<"application/json">>,
+              basic_auth => {Player1, Pass1}},  
+  {ok, Pid1} = shotgun:open("localhost", 8080),
+  {ok, Pid2} = shotgun:open("localhost", 8080),
+  % Get event with the same player and match
+  try
+    {ok, Ref1} = shotgun:get( Pid1
+                            , "/matches/" ++ Mid ++ "/events"
+                            , Headers1
+                            , #{ async => true
+                               , async_mode => sse}),
+    {ok, Ref2} = shotgun:get( Pid2
+                            , "/matches/" ++ Mid ++ "/events"
+                            , Headers1
+                            , #{ async => true
+                               , async_mode => sse}),
+    Ref1 = Ref2
+  catch
+    _:{badmatch, _} -> ok
+  after
+    shotgun:close(Pid1),
+    shotgun:close(Pid2)
+  end.
+
 -spec get_event_invalid_player(config()) -> ok.
 get_event_invalid_player(Config) ->
   % Get match and player1
@@ -593,7 +621,7 @@ get_event_invalid_player(Config) ->
                   , async_mode => sse}),
     timer:sleep(500),
     [Status1] = shotgun:events(Pid1),
-    400 = maps:get(status_code, Status1),
+    404 = maps:get(status_code, Status1),
     % Get event with invalid id
     shotgun:get( Pid2
                , "/matches/123456/events"
@@ -602,7 +630,7 @@ get_event_invalid_player(Config) ->
                   , async_mode => sse}),
     timer:sleep(500),
     [Status2] = shotgun:events(Pid2),
-    400 = maps:get(status_code, Status2),
+    404 = maps:get(status_code, Status2),
     % Get event with player not authenticated
     shotgun:get( Pid3
                , "/matches/" ++ Mid ++ "/events"

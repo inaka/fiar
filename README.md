@@ -4,6 +4,15 @@
 
 For in a Row - A game to learn Erlang
 
+## Contact Us
+
+For **questions** or **general comments** regarding the use of this library, please use our public
+[hipchat room](https://www.hipchat.com/gpBpW3SsT).
+
+If you find any **bugs** or have a **problem** while using this library, please [open an issue](https://github.com/inaka/fiar/issues/new) in this repo (or a pull request :)).
+
+And you can check all of our open-source projects at [inaka.github.io](http://inaka.github.io)
+
 ## The Game
 
 Connect Four is a two-player connection game in which the players first choose a color and then take turns dropping colored discs from the top into a seven-column, seven-row vertically suspended grid. The pieces fall straight down, occupying the next available space within the column. The object of the game is to connect four of one's own discs of the same color next to each other vertically, horizontally, or diagonally before your opponent.

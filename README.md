@@ -2,7 +2,7 @@
 
 # fiar
 
-For in a Row - A game to learn Erlang
+Four in a Row - A game to learn Erlang
 
 ## Contact Us
 

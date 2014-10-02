@@ -61,22 +61,10 @@ handle_put(Req, State) ->
     Col = maps:get(<<"column">>, jiffy:decode(Body, [return_maps])),
     User = maps:get(user, State),
     fiar:play(MatchId, Col, User),
-    
     Match = fiar:get_match(MatchId, User),
     MatchJson = fiar_match:to_json(Match),
     RespBody = jiffy:encode(MatchJson),
     Req3 = cowboy_req:set_resp_body(RespBody, Req2),
-
-    Rival = integer_to_list(fiar_match:get_player(Match)),
-    Process = 
-      list_to_atom("fiar_player_" ++ integer_to_list(MatchId) ++ "_" ++ Rival),
-    lager:info("Process -->~p~n", [Process]),
-    case whereis(Process) of
-      undefined ->
-        ok;
-      _ -> 
-        lasse_handler:notify(Process, <<"The other player played.">>)
-    end,
     {true, Req3, State}
   catch
     _:Exception ->

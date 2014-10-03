@@ -7,6 +7,7 @@
 %%% Public API
 -export(
   [ new/2
+  , get_id/1
   , get_player1/1
   , get_player2/1
   , get_state/1
@@ -76,10 +77,12 @@ new(Player1, Player2) ->
 
 get_player(Match) ->
   State = get_state(Match),
-  case fiar_core:get_current_chip(State) of
+  case fiar_core:get_next_chip(State) of
     1 -> get_player1(Match);
     2 -> get_player2(Match)
   end.
+
+get_id(Match) -> proplists:get_value(id, Match).
 
 get_player1(Match) -> proplists:get_value(player1, Match).
 

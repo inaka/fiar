@@ -11,7 +11,7 @@
 -opaque match() :: #match{}.
 
 -export_type([chip/0, board/0, col/0, match/0]).
--export([start/0, play/2, get_current_chip/1, to_json/1]).
+-export([start/0, play/2, get_next_chip/1, to_json/1]).
 
 -spec start() -> match().
 start()  -> 
@@ -38,8 +38,8 @@ play(Col, Match = #match{board = Board, next_chip = NextChip}) ->
       end
   end.
 
--spec get_current_chip(match()) -> chip().
-get_current_chip(Match) ->
+-spec get_next_chip(match()) -> chip().
+get_next_chip(Match) ->
   Match#match.next_chip.
 
 diff_chip(1) -> 2;

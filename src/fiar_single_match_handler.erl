@@ -54,7 +54,7 @@ handle_get(Req, State) ->
   end.
 
 handle_put(Req, State) ->
-  {MatchIdBin, Req1} =  cowboy_req:binding(match_id, Req),
+  {MatchIdBin, Req1} = cowboy_req:binding(match_id, Req),
   try 
     MatchId = binary_to_integer(MatchIdBin, 10),
     {ok, Body, Req2} =  cowboy_req:body(Req1),

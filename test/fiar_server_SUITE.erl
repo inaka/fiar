@@ -64,7 +64,7 @@
         , match_finished/1
         , notification_of_move/1
         , get_event_invalid_player/1
-        , get_event_invalid_match/1
+        , double_connection/1
         ]).
 
 -spec all() -> [atom()].
@@ -76,7 +76,7 @@ init_per_testcase(get_matches, Config) -> basic(Config);
 init_per_testcase(get_status, Config) -> basic(Config);
 init_per_testcase(first_play, Config) -> basic(Config);
 init_per_testcase(bad_credentials, Config) -> basic(Config);
-init_per_testcase(complete_coverage, Config) -> basic(Config);
+init_per_testcase(complete_coverage, Config) -> authenticated(Config);
 init_per_testcase(play_bad_id, Config) -> authenticated(Config);
 init_per_testcase(start_without_player2, Config) -> authenticated(Config);
 init_per_testcase(wins_vertically, Config) -> authenticated(Config);
@@ -89,7 +89,7 @@ init_per_testcase(match_finished, Config) -> authenticated(Config);
 init_per_testcase(drawn, Config) -> authenticated(Config);
 init_per_testcase(notification_of_move, Config) -> authenticated(Config);
 init_per_testcase(get_event_invalid_player, Config) -> authenticated(Config);
-init_per_testcase(get_event_invalid_match, Config) -> authenticated(Config);
+init_per_testcase(double_connection, Config) -> authenticated(Config);
 init_per_testcase(start, Config) -> authenticated(Config).
 
 basic(Config) ->
@@ -114,6 +114,7 @@ authenticated(Config) ->
     api_call(post, "/users", Headers, User2Body),
   BodyDecode2 = jiffy:decode(User2, [return_maps]),
   Pass2 = maps:get(<<"pass">>, BodyDecode2),
+  Id2 = maps:get(<<"id">>, BodyDecode2),
 
   % Create match
   BodyDecode = jiffy:decode(User1, [return_maps]),
@@ -132,6 +133,7 @@ authenticated(Config) ->
    {pass, Pass},
    {username2, Name2},
    {pass2, Pass2},
+   {id2, Id2},
    {match_id, Mid} | Config].
 
 end_per_testcase(_, Config) ->
@@ -536,15 +538,15 @@ notification_of_move(Config) ->
     {ok, _Ref} = shotgun:get( Pid1
                             , "/matches/" ++ Mid ++ "/events"
                             , Headers2
-                            , #{async => true,
-                                async_mode => sse}),
+                            , #{ async => true
+                               , async_mode => sse}),
     api_call(put, "/matches/" ++ Mid, Headers, Body),
     timer:sleep(300),
     {ok, _Ref1} = shotgun:get( Pid2
-                            , "/matches/" ++ Mid ++ "/events"
-                            , Headers
-                            , #{async => true,
-                                async_mode => sse}),
+                             , "/matches/" ++ Mid ++ "/events"
+                             , Headers
+                             , #{ async => true
+                                , async_mode => sse}),
     api_call(put, "/matches/" ++ Mid, Headers2, Body),
     timer:sleep(300),
     [{_, _, EventBin2}] = shotgun:events(Pid2),
@@ -561,31 +563,48 @@ notification_of_move(Config) ->
     shotgun:close(Pid2)
   end.
 
--spec get_event_invalid_match(config()) -> ok.
-get_event_invalid_match(Config) ->
+-spec double_connection(config()) -> ok.
+double_connection(Config) ->
   % Get match and player1
   Mid = proplists:get_value(match_id, Config),
   Player1 = proplists:get_value(username, Config),
   Pass1 = proplists:get_value(pass, Config),
   Headers1 = #{<<"content-type">> => <<"application/json">>,
               basic_auth => {Player1, Pass1}},  
+  Player2 = proplists:get_value(username2, Config),
+  Pass2 = proplists:get_value(pass2, Config),
+  Headers2 = #{<<"content-type">> => <<"application/json">>,
+              basic_auth => {Player2, Pass2}},
+  Body = jiffy:encode(#{column => 1}),
+
   {ok, Pid1} = shotgun:open("localhost", 8080),
   {ok, Pid2} = shotgun:open("localhost", 8080),
   % Get event with the same player and match
   try
     {ok, Ref1} = shotgun:get( Pid1
                             , "/matches/" ++ Mid ++ "/events"
-                            , Headers1
+                            , Headers2
                             , #{ async => true
                                , async_mode => sse}),
+
+    api_call(put, "/matches/" ++ Mid, Headers1, Body),
+
+    timer:sleep(300),
+    [{nofin, Ref1, _}] = shotgun:events(Pid1),
+
     {ok, Ref2} = shotgun:get( Pid2
                             , "/matches/" ++ Mid ++ "/events"
-                            , Headers1
+                            , Headers2
                             , #{ async => true
                                , async_mode => sse}),
-    Ref1 = Ref2
-  catch
-    _:{badmatch, _} -> ok
+
+    api_call(put, "/matches/" ++ Mid, Headers2, Body),
+    api_call(put, "/matches/" ++ Mid, Headers1, Body),
+
+    timer:sleep(300),
+    [] = shotgun:events(Pid1),
+    [{nofin, Ref2, _}] = shotgun:events(Pid2),
+    ok
   after
     shotgun:close(Pid1),
     shotgun:close(Pid2)
@@ -650,12 +669,37 @@ get_event_invalid_player(Config) ->
   end.
 
 -spec complete_coverage(config()) -> ok.
-complete_coverage(_Config) ->
+complete_coverage(Config) ->
   try fiar_auth:credentials({bad_attribute}) of
     Credentials -> throw({error, Credentials})
   catch
     _ -> ok
-  end.
+  end,
+
+  Mid = proplists:get_value(match_id, Config),
+  Id2 = proplists:get_value(id2, Config),
+  Player2 = proplists:get_value(username2, Config),
+  Pass2 = proplists:get_value(pass2, Config),
+  Headers2 = #{<<"content-type">> => <<"application/json">>,
+              basic_auth => {Player2, Pass2}},
+  {ok, Pid1} = shotgun:open("localhost", 8080),
+  try
+    shotgun:get( Pid1
+               , "/matches/" ++ Mid ++ "/events"
+               , Headers2
+               , #{ async => true
+                  , async_mode => sse}),
+
+    ProcessName =
+      list_to_atom("fiar_player_" ++ Mid ++ "_" ++ integer_to_list(Id2)),
+    timer:sleep(500),
+    ProcessName ! completing_coverage_of_handle_info
+  after
+    shotgun:close(Pid1)
+  end,
+
+  state = fiar_notify_handler:handle_error(msg, reason, state),
+  ok.
 
 %% @private
 drop_chips([], Mid, [Header, _]) -> 

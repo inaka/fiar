@@ -7,6 +7,7 @@
 %%% Public API
 -export(
   [ new/2
+  , get_id/1
   , get_player1/1
   , get_player2/1
   , get_state/1
@@ -80,6 +81,8 @@ get_player(Match) ->
     1 -> get_player1(Match);
     2 -> get_player2(Match)
   end.
+
+get_id(Match) -> proplists:get_value(id, Match).
 
 get_player1(Match) -> proplists:get_value(player1, Match).
 

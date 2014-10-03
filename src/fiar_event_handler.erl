@@ -20,7 +20,7 @@
 %%      fiar_events event manager
 -spec start_link() -> {ok, pid()}.
 start_link() -> 
-  {ok, Pid} = gen_event:start_link(fiar_events),
+  {ok, Pid} = gen_event:start_link({local, fiar_events}),
   gen_event:add_handler(fiar_events, fiar_event_handler, {}),
   {ok, Pid}.
 
@@ -32,13 +32,20 @@ init({}) ->
   {ok, #state{}}.
 
 -spec handle_event({module(), atom(), term()}, state()) -> {ok, state()}.
-handle_event({fiar_match, created, [Match]}, State) ->
-  MatchId = fiar_match:get_id(Match),
-  UserId = fiar_match:get_player(Match),
-  Process = fiar_utils:process_name(MatchId, UserId),
-  lasse_handler:notify(Process, Match),
+handle_event({fiar_match, updated, [Match]}, State) ->
+  try
+    MatchId = fiar_match:get_id(Match),
+    UserId = fiar_match:get_player(Match),
+    fiar:notify(MatchId, UserId, Match)
+  catch
+    _:Exception ->
+      lager:warning(
+        "Could not deliver notification: ~p~nStack: ~p",
+        [Exception, erlang:get_stacktrace()])
+  end,
   {ok, State};
-handle_event(_Event, State) ->
+handle_event(Event, State) ->
+  lager:info("Unhandled event: ~p~n", [Event]),
   {ok, State}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

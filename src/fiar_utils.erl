@@ -2,7 +2,6 @@
 
 -export([ handle_exception/3
         , datetime_to_json/1
-        , process_name/2
         ]).
 
 -type datetime() ::
@@ -52,9 +51,3 @@ handle_exception(notfound, Req, State) ->
 handle_exception(conflict, Req, State)->
   {ok, Req1} = cowboy_req:reply(409, Req),
   {halt, Req1, State}.
-
-process_name(MatchId, UserId) ->
-  list_to_atom("fiar_player_"
-              ++ integer_to_list(MatchId)
-              ++ "_"
-              ++ integer_to_list(UserId)).

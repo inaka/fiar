@@ -17,6 +17,7 @@
         , get_matches/1
         , new_user/1
         , find_user/1
+        , notify/3
         ]).
 
 -spec start() -> ok | {error, term()}.
@@ -61,6 +62,9 @@ get_matches(User) ->
 
 find_user(Username) ->
   fiar_user_repo:find_by_username(Username).
+
+notify(MatchId, UserId, Match) ->
+  fiar_notify_handler:notify(MatchId, UserId, Match).
 
 start_cowboy_listeners() ->
   Dispatch = cowboy_router:compile([

@@ -35,16 +35,16 @@ init(_InitArgs, _LastEventId, Req) ->
 
 handle_notify({user_conected, User}, State) ->
   UserJson = jiffy:encode(fiar_user:to_json_no_pass(User)),
-  {send, [{data, UserJson}], State};
+  {send, [{data, UserJson}, {name, <<"user_conected">>}], State};
 handle_notify({user_disconected, User}, State) ->
   UserJson = jiffy:encode(fiar_user:to_json_no_pass(User)),
-  {send, [{data, UserJson}], State};
+  {send, [{data, UserJson}, {name, <<"user_disconected">>}], State};
 handle_notify({match_started, Match}, State) ->
   MatchJson = jiffy:encode(fiar_match:to_json(Match)),
-  {send, [{data, MatchJson}], State};
+  {send, [{data, MatchJson}, {name, <<"match_started">>}], State};
 handle_notify({match_ended, Match}, State) ->
   MatchJson = jiffy:encode(fiar_user:to_json(Match)),
-  {send, [{data, MatchJson}], State}.
+  {send, [{data, MatchJson}, {name, <<"match_ended">>}], State}.
 
 handle_info(stop, State) ->
   {stop, State};

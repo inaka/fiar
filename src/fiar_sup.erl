@@ -18,11 +18,11 @@ init([]) ->
        [ktn_random]
       },
   GenEvent =
-      {fiar_events, 
-       {fiar_event_handler, start_link, []}, 
-       permanent, 
-       5000, 
-       worker, 
+      {fiar_events,
+       {fiar_event_handler, start_link, []},
+       permanent,
+       5000,
+       worker,
        [fiar_event_handler]
       },
   {ok, {{one_for_one, 10, 60},

@@ -20,9 +20,7 @@
 %%      fiar_events event manager
 -spec start_link() -> {ok, pid()}.
 start_link() -> 
-  {ok, Pid} = gen_event:start_link({local, fiar_events}),
-  gen_event:add_handler(fiar_events, fiar_event_handler, {}),
-  {ok, Pid}.
+  {ok, _} = fiar_events:start_link().
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Callback implementation
@@ -37,6 +35,17 @@ handle_event({fiar_match, updated, [Match]}, State) ->
     MatchId = fiar_match:get_id(Match),
     UserId = fiar_match:get_player(Match),
     fiar:notify(MatchId, UserId, Match)
+  catch
+    _:Exception ->
+      lager:warning(
+        "Could not deliver notification: ~p~nStack: ~p",
+        [Exception, erlang:get_stacktrace()])
+  end,
+  {ok, State};
+handle_event({created, User}, State) ->
+  try
+    UserId = fiar_user:get_id(User),
+    fiar:broadcast(user_conected, User)
   catch
     _:Exception ->
       lager:warning(

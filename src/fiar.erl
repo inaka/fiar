@@ -18,6 +18,8 @@
         , new_user/1
         , find_user/1
         , notify/3
+        , send_event/2
+        , broadcast/2
         ]).
 
 -spec start() -> ok | {error, term()}.
@@ -65,6 +67,12 @@ find_user(Username) ->
 
 notify(MatchId, UserId, Match) ->
   fiar_notify_handler:notify(MatchId, UserId, Match).
+
+send_event(EventName, User) ->
+  fiar_event:notify(EventName, User).
+
+broadcast(EventName, User) ->
+  fiar_notify_users_handler:notify(EventName, User).
 
 start_cowboy_listeners() ->
   Dispatch = cowboy_router:compile([

@@ -114,11 +114,11 @@ authenticated(Config) ->
     api_call(post, "/users", Headers, User2Body),
   BodyDecode2 = jiffy:decode(User2, [return_maps]),
   Pass2 = maps:get(<<"pass">>, BodyDecode2),
-  Id2 = maps:get(<<"id">>, BodyDecode2),
 
   % Create match
   BodyDecode = jiffy:decode(User1, [return_maps]),
   Username = maps:get(<<"username">>, BodyDecode),
+  Id1 = maps:get(<<"id">>, BodyDecode),
 
   Pass = maps:get(<<"pass">>, BodyDecode),
   Headers1 = #{<<"content-type">> => <<"application/json">>,
@@ -129,11 +129,11 @@ authenticated(Config) ->
   MatchDecode = jiffy:decode(Match, [return_maps]),
   Mid = integer_to_list(maps:get(<<"id">>, MatchDecode)),
 
-  [{username, Username},
-   {pass, Pass},
-   {username2, Name2},
-   {pass2, Pass2},
-   {id2, Id2},
+  [{username, Name2},
+   {pass, Pass2},
+   {id1, Id1},
+   {username2, Username},
+   {pass2, Pass},
    {match_id, Mid} | Config].
 
 end_per_testcase(_, Config) ->
@@ -323,8 +323,8 @@ first_play(_Config) ->
   {ok, #{status_code := 200, body := RespBody}} = 
     api_call(put, "/matches/" ++ Mid, Headers1, MoveBody),
   State = maps:get(<<"state">>, jiffy:decode(RespBody, [return_maps])),
-  [[1]|_] = maps:get(<<"board">>, State),
-  2 = maps:get(<<"next_chip">>, State),
+  [[2]|_] = maps:get(<<"board">>, State),
+  1 = maps:get(<<"next_chip">>, State),
   ok.
 
 -spec play_bad_id(config()) -> ok.
@@ -366,9 +366,9 @@ wins_vertically(Config) ->
     drop_chips([1, 2, 1, 2, 1, 2, 1], Mid, [Headers1, Headers2]),
   BodyDecode = jiffy:decode(RespBody, [return_maps]),
   State = maps:get(<<"state">>, BodyDecode),
-  [[1, 1, 1], [2, 2, 2], [], [], [], [], []] = maps:get(<<"board">>, State),
-  1 = maps:get(<<"next_chip">>, State),
-  <<"won_by_player1">> = maps:get(<<"status">>, BodyDecode),
+  [[2, 2, 2], [1, 1, 1], [], [], [], [], []] = maps:get(<<"board">>, State),
+  2 = maps:get(<<"next_chip">>, State),
+  <<"won_by_player2">> = maps:get(<<"status">>, BodyDecode),
   ok.
 
 % @doc when the player puts 4 chips in a horizontal row, wins
@@ -388,9 +388,9 @@ wins_horizontally(Config) ->
     drop_chips([2, 5, 3, 6, 4, 7, 1], Mid, [Headers1, Headers2]),
   BodyDecode = jiffy:decode(RespBody, [return_maps]),
   State = maps:get(<<"state">>, BodyDecode),
-  [[], [1], [1], [1], [2], [2], [2]] = maps:get(<<"board">>, State),
-  1 = maps:get(<<"next_chip">>, State),
-  <<"won_by_player1">> = maps:get(<<"status">>, BodyDecode),
+  [[], [2], [2], [2], [1], [1], [1]] = maps:get(<<"board">>, State),
+  2 = maps:get(<<"next_chip">>, State),
+  <<"won_by_player2">> = maps:get(<<"status">>, BodyDecode),
   ok.
 
 %% @doc when the player puts 4 chips in a diagonal row, wins
@@ -409,10 +409,10 @@ wins_right_diagonally(Config) ->
     drop_chips([4, 4, 4, 4, 6, 3, 3, 3, 2, 2, 7, 1], Mid, [Headers1, Headers2]),
   BodyDecode = jiffy:decode(RespBody, [return_maps]),
   State = maps:get(<<"state">>, BodyDecode),
-  [[], [2, 1], [2, 1, 2], [2, 1, 2, 1], [], [1], [1]] =
+  [[], [1, 2], [1, 2, 1], [1, 2, 1, 2], [], [2], [2]] =
     maps:get(<<"board">>, State),
-  2 = maps:get(<<"next_chip">>, State),
-  <<"won_by_player2">> = maps:get(<<"status">>, BodyDecode),
+  1 = maps:get(<<"next_chip">>, State),
+  <<"won_by_player1">> = maps:get(<<"status">>, BodyDecode),
   ok.
 
 %% @doc when the player puts 4 chips in a diagonal row, wins
@@ -431,10 +431,10 @@ wins_left_diagonally(Config) ->
     drop_chips([4, 4, 4, 4, 2, 5, 5, 5, 6, 6, 1, 7], Mid, [Headers1, Headers2]),
   BodyDecode = jiffy:decode(RespBody, [return_maps]),
   State = maps:get(<<"state">>, BodyDecode),
-  [[1], [1], [], [2, 1, 2, 1], [2, 1, 2], [2, 1], []] =
+  [[2], [2], [], [1, 2, 1, 2], [1, 2, 1], [1, 2], []] =
     maps:get(<<"board">>, State),
-  2 = maps:get(<<"next_chip">>, State),
-  <<"won_by_player2">> = maps:get(<<"status">>, BodyDecode),
+  1 = maps:get(<<"next_chip">>, State),
+  <<"won_by_player1">> = maps:get(<<"status">>, BodyDecode),
   ok.
 
 -spec match_finished(config()) -> ok.
@@ -677,7 +677,7 @@ complete_coverage(Config) ->
   end,
 
   Mid = proplists:get_value(match_id, Config),
-  Id2 = proplists:get_value(id2, Config),
+  Id1 = proplists:get_value(id1, Config),
   Player2 = proplists:get_value(username2, Config),
   Pass2 = proplists:get_value(pass2, Config),
   Headers2 = #{<<"content-type">> => <<"application/json">>,
@@ -691,7 +691,7 @@ complete_coverage(Config) ->
                   , async_mode => sse}),
 
     ProcessName =
-      list_to_atom("fiar_player_" ++ Mid ++ "_" ++ integer_to_list(Id2)),
+      list_to_atom("fiar_player_" ++ Mid ++ "_" ++ integer_to_list(Id1)),
     timer:sleep(500),
     ProcessName ! completing_coverage_of_handle_info
   after

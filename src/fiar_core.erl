@@ -7,7 +7,7 @@
   {column(), column(), column(), column(), column(), column(), column()}.
 -type col() :: 1..7.
 
--record(match, {board::board(), next_chip = 1 :: chip()}).
+-record(match, {board::board(), next_chip = 2 :: chip()}).
 -opaque match() :: #match{}.
 
 -export_type([chip/0, board/0, col/0, match/0]).

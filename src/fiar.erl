@@ -22,7 +22,7 @@
 
 -spec start() -> ok | {error, term()}.
 start() ->
-  application:ensure_all_started(fiar),
+  {ok, _} = application:ensure_all_started(fiar),
   sumo:create_schema().
 
 -spec stop() -> ok | {error, term()}.
@@ -68,13 +68,19 @@ notify(MatchId, UserId, Match) ->
 
 start_cowboy_listeners() ->
   Dispatch = cowboy_router:compile([
-    {'_', [{"/matches", fiar_matches_handler, []},
-           {"/matches/:match_id", fiar_single_match_handler, []},
-           {"/users", fiar_users_handler, []},
-           { "/matches/:match_id/events"
-           , lasse_handler
-           , [fiar_notify_handler]}
-          ]}
+    {'_', [ { "/matches", fiar_matches_handler, []}
+          , { "/matches/:match_id", fiar_single_match_handler, []}
+          , { "/users", fiar_users_handler, []}
+          , { "/matches/:match_id/events"
+            , lasse_handler
+            , [fiar_notify_handler]
+            }
+          , { "/events"
+            , lasse_handler
+            , [fiar_notify_users_handler]
+            }
+          ]
+    }
   ]),
   cowboy:start_http(fiar_http_listener, 100, [{port, 8080}],
     [{env, [{dispatch, Dispatch}]}]

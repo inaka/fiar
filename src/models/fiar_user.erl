@@ -66,5 +66,8 @@ get_id(User) -> proplists:get_value(id, User).
 to_json(User) ->
   { [to_json_attr(K, V) || {K, V} <- User] }.
 
+to_json_no_pass(User) ->
+  { [to_json_attr(K, V) || {K, V} <- User, K /= pass] }.
+
 to_json_attr(K, {datetime, DT}) -> {K, fiar_utils:datetime_to_json(DT)};
 to_json_attr(K, V) -> {K, V}.

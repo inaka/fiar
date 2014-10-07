@@ -66,7 +66,7 @@
         , get_event_invalid_player/1
         , double_connection/1
         , get_events/1
-        , signup/1
+        , get_connections/1
         ]).
 
 -spec all() -> [atom()].
@@ -93,7 +93,7 @@ init_per_testcase(notification_of_move, Config) -> authenticated(Config);
 init_per_testcase(get_event_invalid_player, Config) -> authenticated(Config);
 init_per_testcase(double_connection, Config) -> authenticated(Config);
 init_per_testcase(get_events, Config) -> authenticated(Config);
-init_per_testcase(signup, Config) -> authenticated(Config);
+init_per_testcase(get_connections, Config) -> authenticated(Config);
 init_per_testcase(start, Config) -> authenticated(Config).
 
 basic(Config) ->
@@ -675,7 +675,6 @@ get_event_invalid_player(Config) ->
 -spec get_events(config()) -> ok.
 get_events(Config) ->
   % Get match and player1
-  Mid = proplists:get_value(match_id, Config),
   Player1 = proplists:get_value(username, Config),
   Pass1 = proplists:get_value(pass, Config),
   Headers1 = #{<<"content-type">> => <<"application/json">>,
@@ -695,10 +694,9 @@ get_events(Config) ->
     shotgun:close(Pid1)
   end.
 
--spec signup(config()) -> ok.
-signup(Config) ->
+-spec get_connections(config()) -> ok.
+get_connections(Config) ->
   % Get match and player1
-  Mid = proplists:get_value(match_id, Config),
   Player1 = proplists:get_value(username, Config),
   Pass1 = proplists:get_value(pass, Config),
   Headers1 = #{<<"content-type">> => <<"application/json">>,
@@ -706,22 +704,14 @@ signup(Config) ->
   % Get events
   {ok, Pid1} = shotgun:open("localhost", 8080),
   try
-    {ok, Ref1} = shotgun:get( Pid1
+    {ok, _Ref1} = shotgun:get( Pid1
                             , "/events"
                             , Headers1
                             , #{ async => true
                                , async_mode => sse}),
     timer:sleep(500),
-    % Create user
-    Headers = #{<<"content-type">> => <<"application/json">>},
-    Name = ktn_random:generate(),
-    Body = jiffy:encode(#{username => Name}),
-    {ok, #{status_code := 200}} =
-      api_call(post, "/users", Headers, Body),
-    % Get create user event
-    timer:sleep(500),
     [{_, _, EventBin}] = shotgun:events(Pid1),
-    <<"user_conected">> = maps:get(event, shotgun:parse_event(EventBin)),
+    [_] = maps:get(data, shotgun:parse_event(EventBin)),
     ok
   after
     shotgun:close(Pid1)

@@ -62,6 +62,8 @@ get_match(MatchId, User) ->
 get_matches(User) ->
   fiar_match_repo:get_matches(User).
 
+find_user(UserId) when is_integer(UserId) ->
+  fiar_user_repo:find_by_id(UserId);
 find_user(Username) ->
   fiar_user_repo:find_by_username(Username).
 

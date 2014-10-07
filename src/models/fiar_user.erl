@@ -9,6 +9,7 @@
   [ new/1
   , get_id/1
   , to_json/1
+  , to_json_no_pass/1
   ]).
 %%% Behaviour callbacks.
 -export([sumo_schema/0, sumo_wakeup/1, sumo_sleep/1]).

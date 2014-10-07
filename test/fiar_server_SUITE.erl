@@ -711,7 +711,10 @@ get_connections(Config) ->
                                , async_mode => sse}),
     timer:sleep(500),
     [{_, _, EventBin}] = shotgun:events(Pid1),
-    [_] = maps:get(data, shotgun:parse_event(EventBin)),
+    Event = shotgun:parse_event(EventBin),
+    [Data] = jiffy:decode(maps:get(data, Event), [return_maps]),
+    [] = maps:get(<<"current_match">>, Data),
+    true = is_map(maps:get(<<"user">>, Data)),
     ok
   after
     shotgun:close(Pid1)

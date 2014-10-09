@@ -8,7 +8,11 @@
         , terminate/3
         ]).
 -export([ broadcast/2
+        , setup/0
         ]).
+
+setup() ->
+  pg2:create(fiar_connected_users).
 
 broadcast(EventName, Content) ->
   Pids = pg2:get_members(fiar_connected_users),
@@ -22,10 +26,10 @@ init(_InitArgs, _LastEventId, Req) ->
     case fiar_auth:check_auth(Req) of
       {authenticated, User, Req1} ->
         process_register(fiar_user:get_id(User)),
-        pg2:create(fiar_connected_users),
         pg2:join(fiar_connected_users, self()),
         ConnectedUsers = get_connected_users(),
         FirstEvent = [{data, jiffy:encode(ConnectedUsers)}],
+        fiar:send_event(fiar_user, connected, [User]),
         {ok, Req, [FirstEvent], #{user => User}};
       {not_authenticated, _AuthHeader, Req1} ->
         {shutdown, 401, [], [], Req1, #{}}
@@ -65,7 +69,7 @@ handle_error(_Msg, _Reason, State) ->
   State.
 
 terminate(_Reason, _Req, State) ->
-  broadcast(user_disconected, maps:get(user, State)),
+  fiar:send_event(fiar_user, disconnected, [maps:get(user, State)]),
   ok.
 
 %% @private
@@ -99,12 +103,7 @@ get_connected_user(Pid) ->
   {[{user, User1}, {current_match, CurrentMatchId}]}.
 
 is_mine(Match, User) ->
-  UserId = fiar_user:get_id(User),
-  try UserId = fiar_match:get_player(Match) of
-    _ -> true
-  catch
-    _ -> false
-  end.
+  fiar_user:get_id(User) == fiar_match:get_player(Match).
 
 process_name_to_user(Proc) ->
   "fiar_user_" ++ UserIdStr = atom_to_list(Proc),

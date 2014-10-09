@@ -36,7 +36,6 @@ handle_post(Req, State) ->
     Decoded = jiffy:decode(Body, [return_maps]),
     Username = maps:get(<<"username">>, Decoded),
     User = fiar:new_user(Username),
-    fiar:send_event(created, User),
     UserJson = fiar_user:to_json(User),
     RespBody = jiffy:encode(UserJson),
     Req2 = cowboy_req:set_resp_body(RespBody, Req1),

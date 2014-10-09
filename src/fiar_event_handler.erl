@@ -42,10 +42,29 @@ handle_event({fiar_match, updated, [Match]}, State) ->
         [Exception, erlang:get_stacktrace()])
   end,
   {ok, State};
-handle_event({created, User}, State) ->
+handle_event({fiar_match, created, [Match]}, State) ->
   try
-    UserId = fiar_user:get_id(User),
+    fiar:broadcast(match_started, Match)
+  catch
+    _:Exception ->
+      lager:warning(
+        "Could not deliver notification: ~p~nStack: ~p",
+        [Exception, erlang:get_stacktrace()])
+  end,
+  {ok, State};
+handle_event({fiar_user, connected, [User]}, State) ->
+  try
     fiar:broadcast(user_conected, User)
+  catch
+    _:Exception ->
+      lager:warning(
+        "Could not deliver notification: ~p~nStack: ~p",
+        [Exception, erlang:get_stacktrace()])
+  end,
+  {ok, State};
+handle_event({fiar_user, disconnected, [User]}, State) ->
+  try
+    fiar:broadcast(user_disconected, User)
   catch
     _:Exception ->
       lager:warning(

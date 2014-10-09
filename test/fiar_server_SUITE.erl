@@ -68,6 +68,7 @@
         , get_events/1
         , get_connections/1
         , user_disconected/1
+        , match_created_event/1
         ]).
 
 -spec all() -> [atom()].
@@ -96,6 +97,7 @@ init_per_testcase(double_connection, Config) -> authenticated(Config);
 init_per_testcase(get_events, Config) -> authenticated(Config);
 init_per_testcase(get_connections, Config) -> authenticated(Config);
 init_per_testcase(user_disconected, Config) -> authenticated(Config);
+init_per_testcase(match_created_event, Config) -> authenticated(Config);
 init_per_testcase(start, Config) -> authenticated(Config).
 
 basic(Config) ->
@@ -556,14 +558,14 @@ notification_of_move(Config) ->
     api_call(put, "/matches/" ++ Mid, Headers2, Body),
     timer:sleep(300),
     [{_, _, EventBin2}] = shotgun:events(Pid2),
-    <<"players_move">> = maps:get(event, shotgun:parse_event(EventBin2)),
+    <<"turn">> = maps:get(event, shotgun:parse_event(EventBin2)),
     api_call(put, "/matches/" ++ Mid, Headers, Body),
     timer:sleep(300),
     [{ _, _, EventBin3 }, { _, _, EventBin4 }] = shotgun:events(Pid1),
-    <<"players_move">> = maps:get(event, shotgun:parse_event(EventBin3)),
-    <<"players_move">> = maps:get(event, shotgun:parse_event(EventBin4))
+    <<"turn">> = maps:get(event, shotgun:parse_event(EventBin3)),
+    <<"turn">> = maps:get(event, shotgun:parse_event(EventBin4))
   catch
-    _:Ex -> {error, Ex}
+    _:Ex -> throw({error, Ex})
   after
     shotgun:close(Pid1),
     shotgun:close(Pid2)
@@ -611,6 +613,8 @@ double_connection(Config) ->
     [] = shotgun:events(Pid1),
     [{nofin, Ref2, _}] = shotgun:events(Pid2),
     ok
+  catch
+    _:Ex -> throw({error, Ex})
   after
     shotgun:close(Pid1),
     shotgun:close(Pid2)
@@ -692,6 +696,8 @@ get_events(Config) ->
     timer:sleep(500),
     true = erlang:is_list(shotgun:events(Pid1)),
     ok
+  catch
+    _:Ex -> throw({error, Ex})
   after
     shotgun:close(Pid1)
   end.
@@ -712,14 +718,16 @@ get_connections(Config) ->
                             , #{ async => true
                                , async_mode => sse}),
     timer:sleep(500),
-    [{ _, _, EventBin}] = shotgun:events(Pid1),
-    Event = shotgun:parse_event(EventBin),
-    [Data] = jiffy:decode(maps:get(data, Event), [return_maps]),
+    [{ _, _, EventBin1}, { _, _, EventBin2}] = shotgun:events(Pid1),
+    Event1 = shotgun:parse_event(EventBin1),
+    [Data] = jiffy:decode(maps:get(data, Event1), [return_maps]),
     [] = maps:get(<<"current_match">>, Data),
     true = is_map(maps:get(<<"user">>, Data)),
+    Event2 = shotgun:parse_event(EventBin2),
+    <<"user_conected">> = maps:get(event, Event2),
     ok
   catch
-    _:Ex -> {error, Ex}
+    _:Ex -> throw({error, Ex})
   after
     shotgun:close(Pid1)
   end.
@@ -752,20 +760,65 @@ user_disconected(Config) ->
                             , #{ async => true
                                , async_mode => sse}),
     timer:sleep(500),
-    [{ _, _, EventBin1}] = shotgun:events(Pid2),
+ 
+    [{ _, _, EventBin1}, { _, _, EventBin2}, _] = shotgun:events(Pid1),
     Event1 = shotgun:parse_event(EventBin1),
-    [_, _] = jiffy:decode(maps:get(data, Event1), [return_maps]),
-    shotgun:close(Pid1),
-    timer:sleep(500),
-    [{ _, _, EventBin2}] = shotgun:events(Pid2),
+    [Data] = jiffy:decode(maps:get(data, Event1), [return_maps]),
+    [] = maps:get(<<"current_match">>, Data),
+    true = is_map(maps:get(<<"user">>, Data)),
+
     Event2 = shotgun:parse_event(EventBin2),
-    <<"user_disconected">> = maps:get(event, Event2),
+    <<"user_conected">> = maps:get(event, Event2),
+    shotgun:close(Pid1),
+
+    timer:sleep(500),
+    [_, _, { _, _, EventBin3}] = shotgun:events(Pid2),
+    Event3 = shotgun:parse_event(EventBin3),
+    <<"user_disconected">> = maps:get(event, Event3),
     ok
   catch
-    _:Ex -> {error, Ex}
+    _:Ex -> throw({error, Ex})
   after
+    shotgun:close(Pid1),
     shotgun:close(Pid2)
   end.
+
+-spec match_created_event(config()) -> ok.
+match_created_event(Config) ->
+  % Get match and player1
+  Player1 = proplists:get_value(username, Config),
+  Player2 = proplists:get_value(username2, Config),
+  Pass1 = proplists:get_value(pass, Config),
+  Headers1 = #{<<"content-type">> => <<"application/json">>,
+              basic_auth => {Player1, Pass1}},
+  % Get events
+  {ok, Pid1} = shotgun:open("localhost", 8080),
+  try
+    {ok, _} = shotgun:get( Pid1
+                            , "/events"
+                            , Headers1
+                            , #{ async => true
+                               , async_mode => sse}),
+    timer:sleep(500),
+    [{ _, _, EventBin1}, { _, _, EventBin2}] = shotgun:events(Pid1),
+    Event1 = shotgun:parse_event(EventBin1),
+    [_] = jiffy:decode(maps:get(data, Event1), [return_maps]),
+    Event2 = shotgun:parse_event(EventBin2),
+    <<"user_conected">> = maps:get(event, Event2),
+    % % Create match
+    Body = jiffy:encode(#{player2 => Player2}),
+    {ok, #{status_code := 200, body := Match}} =
+      api_call(post, "/matches", Headers1, Body),
+    timer:sleep(500),
+    [{ _, _, EventBin3}] = shotgun:events(Pid1),
+    Event3 = shotgun:parse_event(EventBin3),
+    <<"match_started">> = maps:get(event, Event3),
+    ok
+  catch
+    _:Ex -> throw({error, Ex})
+  after
+    shotgun:close(Pid1)
+  end.  
 
 -spec complete_coverage(config()) -> ok.
 complete_coverage(Config) ->

@@ -1,7 +1,7 @@
 -module(fiar_events).
 -author('euen@inakanetworks.com').
 
--export([start_link/0, notify/2]).
+-export([start_link/0, notify/3]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Public API
@@ -14,5 +14,5 @@ start_link() ->
   gen_event:add_handler(fiar_events, fiar_event_handler, {}),
   {ok, Pid}.
 
-notify(EventName, User) ->
-  gen_event:notify(fiar_events, {EventName, User}).
+notify(Module, EventName, User) ->
+  gen_event:notify(fiar_events, {Module, EventName, User}).

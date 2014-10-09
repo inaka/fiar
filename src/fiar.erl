@@ -18,7 +18,7 @@
         , new_user/1
         , find_user/1
         , notify/3
-        , send_event/2
+        , send_event/3
         , broadcast/2
         ]).
 
@@ -34,6 +34,7 @@ stop() -> application:stop(fiar).
 start(normal, _Args) ->
   {ok, Pid} = fiar_sup:start_link(),
   start_cowboy_listeners(),
+  fiar_notify_users_handler:setup(),
   {ok, Pid}.
 
 -spec stop(atom()) -> ok.
@@ -70,11 +71,11 @@ find_user(Username) ->
 notify(MatchId, UserId, Match) ->
   fiar_notify_handler:notify(MatchId, UserId, Match).
 
-send_event(EventName, User) ->
-  fiar_events:notify(EventName, User).
+send_event(Module, EventName, Content) ->
+  fiar_events:notify(Module, EventName, Content).
 
-broadcast(EventName, User) ->
-  fiar_notify_users_handler:broadcast(EventName, User).
+broadcast(EventName, Content) ->
+  fiar_notify_users_handler:broadcast(EventName, Content).
 
 start_cowboy_listeners() ->
   Dispatch = cowboy_router:compile([

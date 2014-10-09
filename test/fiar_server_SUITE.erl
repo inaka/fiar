@@ -67,6 +67,7 @@
         , double_connection/1
         , get_events/1
         , get_connections/1
+        , user_disconected/1
         ]).
 
 -spec all() -> [atom()].
@@ -94,6 +95,7 @@ init_per_testcase(get_event_invalid_player, Config) -> authenticated(Config);
 init_per_testcase(double_connection, Config) -> authenticated(Config);
 init_per_testcase(get_events, Config) -> authenticated(Config);
 init_per_testcase(get_connections, Config) -> authenticated(Config);
+init_per_testcase(user_disconected, Config) -> authenticated(Config);
 init_per_testcase(start, Config) -> authenticated(Config).
 
 basic(Config) ->
@@ -710,14 +712,59 @@ get_connections(Config) ->
                             , #{ async => true
                                , async_mode => sse}),
     timer:sleep(500),
-    [{_, _, EventBin}] = shotgun:events(Pid1),
+    [{ _, _, EventBin}] = shotgun:events(Pid1),
     Event = shotgun:parse_event(EventBin),
     [Data] = jiffy:decode(maps:get(data, Event), [return_maps]),
     [] = maps:get(<<"current_match">>, Data),
     true = is_map(maps:get(<<"user">>, Data)),
     ok
+  catch
+    _:Ex -> {error, Ex}
   after
     shotgun:close(Pid1)
+  end.
+
+
+-spec user_disconected(config()) -> ok.
+user_disconected(Config) ->
+  % Get match and player1
+  Player1 = proplists:get_value(username, Config),
+  Player2 = proplists:get_value(username2, Config),
+  Pass1 = proplists:get_value(pass, Config),
+  Pass2 = proplists:get_value(pass2, Config),
+  Headers1 = #{<<"content-type">> => <<"application/json">>,
+              basic_auth => {Player1, Pass1}},
+  Headers2 = #{<<"content-type">> => <<"application/json">>,
+              basic_auth => {Player2, Pass2}},
+  % Get events
+  {ok, Pid1} = shotgun:open("localhost", 8080),
+  {ok, Pid2} = shotgun:open("localhost", 8080),
+  try
+    {ok, _} = shotgun:get( Pid1
+                            , "/events"
+                            , Headers1
+                            , #{ async => true
+                               , async_mode => sse}),
+    timer:sleep(500),
+    {ok, _} = shotgun:get( Pid2
+                            , "/events"
+                            , Headers2
+                            , #{ async => true
+                               , async_mode => sse}),
+    timer:sleep(500),
+    [{ _, _, EventBin1}] = shotgun:events(Pid2),
+    Event1 = shotgun:parse_event(EventBin1),
+    [_, _] = jiffy:decode(maps:get(data, Event1), [return_maps]),
+    shotgun:close(Pid1),
+    timer:sleep(500),
+    [{ _, _, EventBin2}] = shotgun:events(Pid2),
+    Event2 = shotgun:parse_event(EventBin2),
+    <<"user_disconected">> = maps:get(event, Event2),
+    ok
+  catch
+    _:Ex -> {error, Ex}
+  after
+    shotgun:close(Pid2)
   end.
 
 -spec complete_coverage(config()) -> ok.

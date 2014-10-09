@@ -71,10 +71,10 @@ notify(MatchId, UserId, Match) ->
   fiar_notify_handler:notify(MatchId, UserId, Match).
 
 send_event(EventName, User) ->
-  fiar_event:notify(EventName, User).
+  fiar_events:notify(EventName, User).
 
 broadcast(EventName, User) ->
-  fiar_notify_users_handler:notify(EventName, User).
+  fiar_notify_users_handler:broadcast(EventName, User).
 
 start_cowboy_listeners() ->
   Dispatch = cowboy_router:compile([

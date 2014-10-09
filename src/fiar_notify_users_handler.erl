@@ -11,7 +11,7 @@
         ]).
 
 broadcast(EventName, Content) ->
-  Pids = pg2:get_all_members(fiar_users_online),
+  Pids = pg2:get_members(fiar_connected_users),
   lists:foreach(
     fun(Pid) ->
       lasse_handler:notify(Pid, {EventName, Content})
@@ -22,8 +22,8 @@ init(_InitArgs, _LastEventId, Req) ->
     case fiar_auth:check_auth(Req) of
       {authenticated, User, Req1} ->
         process_register(fiar_user:get_id(User)),
-        pg2:create(fiar_users_online),
-        pg2:join(fiar_users_online, self()),
+        pg2:create(fiar_connected_users),
+        pg2:join(fiar_connected_users, self()),
         ConnectedUsers = get_connected_users(),
         FirstEvent = [{data, jiffy:encode(ConnectedUsers)}],
         {ok, Req, [FirstEvent], #{user => User}};
@@ -64,7 +64,8 @@ handle_info(_Msg, State) ->
 handle_error(_Msg, _Reason, State) ->
   State.
 
-terminate(_Reason, _Req, _State) ->
+terminate(_Reason, _Req, State) ->
+  broadcast(user_disconected, maps:get(user, State)),
   ok.
 
 %% @private
@@ -82,7 +83,7 @@ process_name(UserId) ->
   list_to_atom("fiar_user_" ++ integer_to_list(UserId)).
 
 get_connected_users() ->
-  Pids = pg2:get_members(fiar_users_online),
+  Pids = pg2:get_members(fiar_connected_users),
   [get_connected_user(Pid) || Pid <- Pids].
 
 get_connected_user(Pid) ->

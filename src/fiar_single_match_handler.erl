@@ -62,6 +62,7 @@ handle_put(Req, State) ->
     User = maps:get(user, State),
     fiar:play(MatchId, Col, User),
     Match = fiar:get_match(MatchId, User),
+    match_ended_notify(Match),
     MatchJson = fiar_match:to_json(Match),
     RespBody = jiffy:encode(MatchJson),
     Req3 = cowboy_req:set_resp_body(RespBody, Req2),
@@ -70,4 +71,11 @@ handle_put(Req, State) ->
     _:Exception ->
       lager:warning("Exception in PUT: ~p~n", [Exception]),
       fiar_utils:handle_exception(Exception, Req1, State)
+  end.
+
+%% @priv
+match_ended_notify(Match) ->
+  case fiar_match:get_status(Match) of
+    on_course -> ok;
+    _ -> fiar:broadcast(match_ended, Match)
   end.

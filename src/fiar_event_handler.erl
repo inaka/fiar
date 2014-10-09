@@ -64,7 +64,7 @@ handle_event({fiar_user, connected, [User]}, State) ->
   {ok, State};
 handle_event({fiar_user, disconnected, [User]}, State) ->
   try
-    fiar:broadcast(user_disconected, User)
+    fiar:broadcast(user_disconnected, User)
   catch
     _:Exception ->
       lager:warning(

@@ -42,9 +42,9 @@ init(_InitArgs, _LastEventId, Req) ->
 handle_notify({user_conected, User}, State) ->
   UserJson = jiffy:encode(fiar_user:to_json_no_pass(User)),
   {send, [{data, UserJson}, {name, <<"user_conected">>}], State};
-handle_notify({user_disconected, User}, State) ->
+handle_notify({user_disconnected, User}, State) ->
   UserJson = jiffy:encode(fiar_user:to_json_no_pass(User)),
-  {send, [{data, UserJson}, {name, <<"user_disconected">>}], State};
+  {send, [{data, UserJson}, {name, <<"user_disconnected">>}], State};
 handle_notify({match_started, Match}, State) ->
   case is_mine(Match, maps:get(user, State)) of
     true -> erlang:put(current_match, fiar_match:get_id(Match));

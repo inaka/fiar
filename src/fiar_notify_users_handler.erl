@@ -68,8 +68,10 @@ handle_info(_Msg, State) ->
 handle_error(_Msg, _Reason, State) ->
   State.
 
-terminate(_Reason, _Req, State) ->
-  fiar:send_event(fiar_user, disconnected, [maps:get(user, State)]),
+terminate(_Reason, _Req, #{user := User}) ->
+  fiar:send_event(fiar_user, disconnected, [User]),
+  ok;
+terminate(_Reason, _Req, _State) ->
   ok.
 
 %% @private

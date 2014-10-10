@@ -70,6 +70,7 @@
         , user_disconnected/1
         , match_created_event/1
         , match_ended_event/1
+        , get_events_no_authentication/1
         ]).
 
 -spec all() -> [atom()].
@@ -100,6 +101,7 @@ init_per_testcase(get_connections, Config) -> authenticated(Config);
 init_per_testcase(user_disconnected, Config) -> authenticated(Config);
 init_per_testcase(match_created_event, Config) -> authenticated(Config);
 init_per_testcase(match_ended_event, Config) -> authenticated(Config);
+init_per_testcase(get_events_no_authentication, Config) -> authenticated(Config);
 init_per_testcase(start, Config) -> authenticated(Config).
 
 basic(Config) ->
@@ -704,6 +706,24 @@ get_events(Config) ->
     shotgun:close(Pid1)
   end.
 
+-spec get_events_no_authentication(config()) -> ok.
+get_events_no_authentication(Config) ->
+  % Get match and player1
+  Player1 = proplists:get_value(username, Config),
+  Pass1 = proplists:get_value(pass, Config),
+  Headers1 = #{<<"content-type">> => <<"application/json">>},
+
+  {ok, Pid1} = shotgun:open("localhost", 8080),
+  try
+   {ok, #{status_code := 401}} = 
+      api_call(get, "/events", Headers1),
+    ok
+  catch
+    _:Ex -> throw({error, Ex})
+  after
+    shotgun:close(Pid1)
+  end.
+
 -spec get_connections(config()) -> ok.
 get_connections(Config) ->
   % Get match and player1
@@ -733,7 +753,6 @@ get_connections(Config) ->
   after
     shotgun:close(Pid1)
   end.
-
 
 -spec user_disconnected(config()) -> ok.
 user_disconnected(Config) ->
@@ -856,9 +875,6 @@ match_ended_event(Config) ->
   after
     shotgun:close(Pid1)
   end.
-
-
-
 
 -spec complete_coverage(config()) -> ok.
 complete_coverage(Config) ->

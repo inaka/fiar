@@ -32,6 +32,7 @@ init({}) ->
 -spec handle_event({module(), atom(), term()}, state()) -> {ok, state()}.
 handle_event({fiar_match, updated, [Match]}, State) ->
   try
+    match_ended_notify(Match),
     MatchId = fiar_match:get_id(Match),
     UserId = fiar_match:get_player(Match),
     fiar:notify(MatchId, UserId, Match)
@@ -99,3 +100,13 @@ terminate(_Reason, _State) ->
   {ok, state()}.
 code_change(_OldVsn, State, _Extra) ->
   {ok, State}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Private Functions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+match_ended_notify(Match) ->
+  case fiar_match:get_status(Match) of
+    on_course -> ok;
+    _ -> fiar:broadcast(match_ended, Match)
+  end.

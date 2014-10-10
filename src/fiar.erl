@@ -17,7 +17,7 @@
         , get_matches/1
         , new_user/1
         , find_user/1
-        , notify/3
+        , notify/4
         , send_event/3
         , broadcast/2
         ]).
@@ -68,14 +68,17 @@ find_user(UserId) when is_integer(UserId) ->
 find_user(Username) ->
   fiar_user_repo:find_by_username(Username).
 
-notify(MatchId, UserId, Match) ->
-  fiar_notify_handler:notify(MatchId, UserId, Match).
+notify(EventName, MatchId, UserId, Match) ->
+  fiar_notify_handler:notify(EventName, MatchId, UserId, Match).
 
 send_event(Module, EventName, Content) ->
   fiar_events:notify(Module, EventName, Content).
 
 broadcast(EventName, Content) ->
   fiar_notify_users_handler:broadcast(EventName, Content).
+
+delete_match(MatchId, User) ->
+  fiar_match_repo:delete(MatchId, User).
 
 start_cowboy_listeners() ->
   Dispatch = cowboy_router:compile([

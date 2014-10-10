@@ -71,6 +71,7 @@
         , match_created_event/1
         , match_ended_event/1
         , get_events_no_authentication/1
+        , delete_match_invalid_user/1
         ]).
 
 -spec all() -> [atom()].
@@ -102,6 +103,7 @@ init_per_testcase(user_disconnected, Config) -> authenticated(Config);
 init_per_testcase(match_created_event, Config) -> authenticated(Config);
 init_per_testcase(match_ended_event, Config) -> authenticated(Config);
 init_per_testcase(get_events_no_authentication, Config) -> authenticated(Config);
+init_per_testcase(delete_match_invalid_user, Config) -> authenticated(Config);
 init_per_testcase(start, Config) -> authenticated(Config).
 
 basic(Config) ->
@@ -281,7 +283,7 @@ get_matches(_Config) ->
   {ok, #{status_code := 200}} =
     api_call(get, "/matches/" ++ integer_to_list(Mid), Headers2),
 
-  {ok, #{status_code := 404}} =
+  {ok, #{status_code := 403}} =
     api_call(get, "/matches/" ++ integer_to_list(Mid), Headers3),
   ok.
 
@@ -567,7 +569,8 @@ notification_of_move(Config) ->
     timer:sleep(300),
     [{ _, _, EventBin3 }, { _, _, EventBin4 }] = shotgun:events(Pid1),
     <<"turn">> = maps:get(event, shotgun:parse_event(EventBin3)),
-    <<"turn">> = maps:get(event, shotgun:parse_event(EventBin4))
+    <<"turn">> = maps:get(event, shotgun:parse_event(EventBin4)),
+    ok
   catch
     _:Ex -> throw({error, Ex})
   after
@@ -707,22 +710,11 @@ get_events(Config) ->
   end.
 
 -spec get_events_no_authentication(config()) -> ok.
-get_events_no_authentication(Config) ->
-  % Get match and player1
-  Player1 = proplists:get_value(username, Config),
-  Pass1 = proplists:get_value(pass, Config),
+get_events_no_authentication(_Config) ->
   Headers1 = #{<<"content-type">> => <<"application/json">>},
-
-  {ok, Pid1} = shotgun:open("localhost", 8080),
-  try
-   {ok, #{status_code := 401}} = 
-      api_call(get, "/events", Headers1),
-    ok
-  catch
-    _:Ex -> throw({error, Ex})
-  after
-    shotgun:close(Pid1)
-  end.
+  {ok, #{status_code := 401}} =
+    api_call(get, "/events", Headers1),
+  ok.
 
 -spec get_connections(config()) -> ok.
 get_connections(Config) ->
@@ -844,7 +836,6 @@ match_created_event(Config) ->
 -spec match_ended_event(config()) -> ok.
 match_ended_event(Config) ->
   % Get match and player1
-  Mid = proplists:get_value(match_id, Config),
   Player1 = proplists:get_value(username, Config),
   Pass1 = proplists:get_value(pass, Config),
   Headers1 = #{<<"content-type">> => <<"application/json">>,
@@ -876,6 +867,23 @@ match_ended_event(Config) ->
     shotgun:close(Pid1)
   end.
 
+-spec delete_match_invalid_user(config()) -> ok.
+delete_match_invalid_user(Config) ->
+  Mid = proplists:get_value(match_id, Config),
+  % Create a player
+  Headers = #{<<"content-type">> => <<"application/json">>},
+  Name = ktn_random:generate(),
+  UserBody = jiffy:encode(#{username => Name}),
+  {ok, #{status_code := 200, body := User}} =
+         api_call(post, "/users", Headers, UserBody),
+  BodyDecode = jiffy:decode(User, [return_maps]),
+  Pass = maps:get(<<"pass">>, BodyDecode),
+  Headers1 = #{<<"content-type">> => <<"application/json">>,
+               basic_auth => {Name, Pass}},
+  {ok, #{status_code := 403}} =
+    api_call(delete, "/matches/" ++ Mid, Headers1),
+  ok.
+
 -spec complete_coverage(config()) -> ok.
 complete_coverage(Config) ->
   try fiar_auth:credentials({bad_attribute}) of
@@ -883,7 +891,6 @@ complete_coverage(Config) ->
   catch
     _ -> ok
   end,
-
   Mid = proplists:get_value(match_id, Config),
   Id1 = proplists:get_value(id1, Config),
   Player2 = proplists:get_value(username2, Config),
@@ -927,6 +934,8 @@ api_call(Method, Url, Headers, Body) ->
                      shotgun:post(Pid, Url, Headers, Body, #{});
                  get ->
                      shotgun:get(Pid, Url, Headers, #{});
+                 delete ->
+                     shotgun:delete(Pid, Url, Headers, #{});
                  put ->
                      shotgun:put(Pid, Url, Headers, Body, #{})
              end,

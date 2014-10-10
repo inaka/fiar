@@ -5,7 +5,13 @@
                 | {next_player, fiar_match:player()}.
 -export_type([status/0]).
 
--export([start/2, get_match/2, play/3, get_matches/1]).
+-export([ start/2
+        , get_match/2
+        , play/3
+        , get_matches/1
+        , delete_match/2
+        ]
+       ).
 
 start(User1, User2) ->
   Player1 = fiar_user:get_id(User1),
@@ -55,7 +61,7 @@ get_match(Mid, User) ->
       UserId = fiar_user:get_id(User),
       case fiar_match:is_player(UserId, Match) of
         true -> Match;
-        false -> throw(notfound)
+        false -> throw(invalid_player)
       end
   end.
 
@@ -63,3 +69,11 @@ get_matches(User) ->
   MatchesAsP1 = sumo:find_by(fiar_match, [{player1, fiar_user:get_id(User)}]),
   MatchesAsP2 = sumo:find_by(fiar_match, [{player2, fiar_user:get_id(User)}]),
   MatchesAsP1 ++ MatchesAsP2.
+
+delete_match(MatchId, User) ->
+  try
+    Match = get_match(MatchId, User),
+    sumo:delete(fiar_match, Match)
+  catch
+    _:Ex -> throw(Ex)
+  end.

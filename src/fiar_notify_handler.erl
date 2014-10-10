@@ -7,12 +7,12 @@
         , handle_error/3
         , terminate/3
         ]).
--export([ notify/3
+-export([ notify/4
         ]).
 
-notify(MatchId, UserId, Match) ->
+notify(EventName, MatchId, UserId, Match) ->
   ProcessName = process_name(MatchId, UserId),
-  try lasse_handler:notify(ProcessName, Match)
+  try lasse_handler:notify(ProcessName, {EventName, Match})
   catch
     _:badarg -> ok %% the destination process doesn't exist
   end.
@@ -35,9 +35,12 @@ init(_InitArgs, _LastEventId, Req) ->
       {shutdown, 404, [], [], Req, #{}}
   end.
 
-handle_notify(Match, State) ->
+handle_notify({match_updated, Match}, State) ->
   MatchJson = jiffy:encode(fiar_match:to_json(Match)),
-  {send, [{data, MatchJson}, {name, <<"turn">>}], State}.
+  {send, [{data, MatchJson}, {name, <<"turn">>}], State};
+handle_notify({match_deleted, Match}, State) ->
+  MatchJson = jiffy:encode(fiar_match:to_json(Match)),
+  {send, [{data, MatchJson}, {name, <<"match_deleted">>}], State}.
 
 handle_info(stop, State) ->
   {stop, State};

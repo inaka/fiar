@@ -20,6 +20,7 @@
         , notify/4
         , send_event/3
         , broadcast/2
+        , delete_match/2
         ]).
 
 -spec start() -> ok | {error, term()}.
@@ -78,7 +79,7 @@ broadcast(EventName, Content) ->
   fiar_notify_users_handler:broadcast(EventName, Content).
 
 delete_match(MatchId, User) ->
-  fiar_match_repo:delete(MatchId, User).
+  fiar_match_repo:delete_match(MatchId, User).
 
 start_cowboy_listeners() ->
   Dispatch = cowboy_router:compile([

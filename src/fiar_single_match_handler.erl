@@ -80,14 +80,13 @@ delete_resource(Req, State) ->
   {MatchIdBin, Req1} = cowboy_req:binding(match_id, Req),
   try
     MatchId = binary_to_integer(MatchIdBin, 10),
-    {ok, Body, Req2} =  cowboy_req:body(Req1),
     User = maps:get(user, State),
     Match = fiar:get_match(MatchId, User),
     fiar:delete_match(MatchId, User),
     MatchJson = fiar_match:to_json(Match),
     RespBody = jiffy:encode(MatchJson),
-    Req3 = cowboy_req:set_resp_body(RespBody, Req2),
-    {true, Req3, State}
+    Req2 = cowboy_req:set_resp_body(RespBody, Req),
+    {true, Req2, State}
   catch
     _:Exception ->
       lager:warning("Exception in DELETE: ~p~n", [Exception]),

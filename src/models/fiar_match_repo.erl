@@ -73,7 +73,7 @@ get_matches(User) ->
 delete_match(MatchId, User) ->
   try
     Match = get_match(MatchId, User),
-    sumo:delete(fiar_match, Match)
+    sumo:call(fiar_match, fiar_delete, [Match])
   catch
-    _:Ex -> throw(Ex)
+    _:Ex -> lager:info("Match error: ~p", [Ex]),throw(Ex)
   end.

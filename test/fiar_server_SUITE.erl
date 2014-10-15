@@ -729,10 +729,10 @@ get_connections(Config) ->
   {ok, Pid1} = shotgun:open("localhost", 8080),
   try
     {ok, _Ref1} = shotgun:get( Pid1
-                            , "/events"
-                            , Headers1
-                            , #{ async => true
-                               , async_mode => sse}),
+                             , "/events"
+                             , Headers1
+                             , #{ async => true
+                                , async_mode => sse}),
     timer:sleep(500),
     [{ _, _, EventBin1}, { _, _, EventBin2}] = shotgun:events(Pid1),
     Event1 = shotgun:parse_event(EventBin1),
@@ -764,16 +764,16 @@ user_disconnected(Config) ->
   {ok, Pid2} = shotgun:open("localhost", 8080),
   try
     {ok, _} = shotgun:get( Pid1
-                            , "/events"
-                            , Headers1
-                            , #{ async => true
-                               , async_mode => sse}),
+                         , "/events"
+                         , Headers1
+                         , #{ async => true
+                            , async_mode => sse}),
     timer:sleep(500),
     {ok, _} = shotgun:get( Pid2
-                            , "/events"
-                            , Headers2
-                            , #{ async => true
-                               , async_mode => sse}),
+                         , "/events"
+                         , Headers2
+                         , #{ async => true
+                            , async_mode => sse}),
     timer:sleep(500),
  
     [{ _, _, EventBin1}, { _, _, EventBin2}, _] = shotgun:events(Pid1),
@@ -810,10 +810,10 @@ match_created_event(Config) ->
   {ok, Pid1} = shotgun:open("localhost", 8080),
   try
     {ok, _} = shotgun:get( Pid1
-                            , "/events"
-                            , Headers1
-                            , #{ async => true
-                               , async_mode => sse}),
+                         , "/events"
+                         , Headers1
+                         , #{ async => true
+                            , async_mode => sse}),
     timer:sleep(500),
     [{ _, _, EventBin1}, { _, _, EventBin2}] = shotgun:events(Pid1),
     Event1 = shotgun:parse_event(EventBin1),
@@ -846,10 +846,10 @@ match_ended_event(Config) ->
   {ok, Pid1} = shotgun:open("localhost", 8080),
   try
     {ok, _} = shotgun:get( Pid1
-                            , "/events"
-                            , Headers1
-                            , #{ async => true
-                               , async_mode => sse}),
+                         , "/events"
+                         , Headers1
+                         , #{ async => true
+                            , async_mode => sse}),
     timer:sleep(500),
     [{ _, _, EventBin1}, { _, _, EventBin2}] = shotgun:events(Pid1),
     Event1 = shotgun:parse_event(EventBin1),
@@ -899,27 +899,56 @@ delete_match(Config) ->
               basic_auth => {Player2, Pass2}},
   % Get events
   {ok, Pid1} = shotgun:open("localhost", 8080),
+  {ok, Pid2} = shotgun:open("localhost", 8080),
+  {ok, Pid3} = shotgun:open("localhost", 8080),
   try
     {ok, _} = shotgun:get( Pid1
-                            , "/events"
-                            , Headers1
-                            , #{ async => true
-                               , async_mode => sse}),
+                         , "/events"
+                         , Headers1
+                         , #{ async => true
+                            , async_mode => sse}),
+    timer:sleep(500),
+    {ok, _} = shotgun:get( Pid2
+                         , "/matches/" ++ Mid ++ "/events"
+                         , Headers2
+                          , #{ async => true
+                             , async_mode => sse}),
+    timer:sleep(500),
+    {ok, _} = shotgun:get( Pid3
+                         , "/matches/" ++ Mid ++ "/events"
+                         , Headers1
+                         , #{ async => true
+                            , async_mode => sse}),
     timer:sleep(500),
     % Play - player1
     UserBody1 = jiffy:encode(#{column => 1}),
     {ok, #{status_code := 200}} =
            api_call(put, "/matches/" ++ Mid, Headers1, UserBody1),
+    timer:sleep(500),
+    % Get matchs events - player2
+    [{_, _, EventBin1_1}] = shotgun:events(Pid2),
+    <<"turn">> = maps:get(event, shotgun:parse_event(EventBin1_1)),
     % Play - player2
     UserBody2 = jiffy:encode(#{column => 1}),
     {ok, #{status_code := 200}} =
            api_call(put, "/matches/" ++ Mid, Headers2, UserBody2),
-    % Get events
+    timer:sleep(500),
+    % Get matchs events - player1
+    [{_, _, EventBin2_1}] = shotgun:events(Pid3),
+    <<"turn">> = maps:get(event, shotgun:parse_event(EventBin2_1)),
+    % Get events (Broadcast)
     [_, _] = shotgun:events(Pid1),
     % Delete match
     {ok, #{status_code := 200}} =
       api_call(delete, "/matches/" ++ Mid, Headers2),
     timer:sleep(500),
+    % Get matchs events - player2
+    [{_, _, EventBin1_2}] = shotgun:events(Pid2),
+    <<"match_ended">> = maps:get(event, shotgun:parse_event(EventBin1_2)),
+    % Get matchs events - player1
+    [{_, _, EventBin2_2}] = shotgun:events(Pid3),
+    <<"match_ended">> = maps:get(event, shotgun:parse_event(EventBin2_2)),
+    % Get events (Broadcast)
     [{ _, _, EventBin3}] = shotgun:events(Pid1),
     Event3 = shotgun:parse_event(EventBin3),
     <<"match_ended">> = maps:get(event, Event3),
@@ -931,7 +960,9 @@ delete_match(Config) ->
   catch
     _:Ex -> throw({error, Ex})
   after
-    shotgun:close(Pid1)
+    shotgun:close(Pid1),
+    shotgun:close(Pid2),
+    shotgun:close(Pid3)
   end.
 
 -spec complete_coverage(config()) -> ok.

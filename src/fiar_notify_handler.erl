@@ -40,7 +40,7 @@ handle_notify({match_updated, Match}, State) ->
   {send, [{data, MatchJson}, {name, <<"turn">>}], State};
 handle_notify({match_deleted, Match}, State) ->
   MatchJson = jiffy:encode(fiar_match:to_json(Match)),
-  {send, [{data, MatchJson}, {name, <<"match_deleted">>}], State}.
+  {send, [{data, MatchJson}, {name, <<"match_ended">>}], State}.
 
 handle_info(stop, State) ->
   {stop, State};

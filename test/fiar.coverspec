@@ -12,7 +12,6 @@
   fiar_sup,
   fiar_matches_handler,
   fiar_single_match_handler,
-  fiar_sup,
   fiar_users_handler,
   fiar_notify_handler,
   fiar_utils,

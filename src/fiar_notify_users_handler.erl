@@ -94,9 +94,6 @@ get_connected_user(Pid) ->
   Response = [{user, User1}, {current_matches, CurrentMatchesJson}],
   {Response}.
 
-% is_mine(Match, User) ->
-%   fiar_user:get_id(User) == fiar_match:get_player(Match).
-
 process_name_to_user(Proc) ->
   "fiar_user_" ++ UserIdStr = atom_to_list(Proc),
   UserId = list_to_integer(UserIdStr),

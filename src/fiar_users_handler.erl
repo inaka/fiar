@@ -36,7 +36,7 @@ handle_post(Req, State) ->
     Decoded = jiffy:decode(Body, [return_maps]),
     Username = maps:get(<<"username">>, Decoded),
     User = fiar:new_user(Username),
-    UserJson = fiar_user:to_json(User),
+    UserJson = fiar_user:to_json(User, private),
     RespBody = jiffy:encode(UserJson),
     Req2 = cowboy_req:set_resp_body(RespBody, Req1),
     {true, Req2, State}

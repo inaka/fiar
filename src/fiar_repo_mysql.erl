@@ -84,6 +84,7 @@ persist(Doc, State) ->
 %% fiar extensions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%% @doc Deletes the match through sumo_db and dispatch the event delete
 fiar_delete(Match, DocName, State) ->
   MatchId = fiar_match:get_id(Match),
   sumo_repo_mysql:delete(DocName, MatchId, State),

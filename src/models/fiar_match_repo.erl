@@ -10,6 +10,7 @@
         , play/3
         , get_matches/1
         , delete_match/2
+        , current_matches/1
         ]
        ).
 
@@ -70,10 +71,18 @@ get_matches(User) ->
   MatchesAsP2 = sumo:find_by(fiar_match, [{player2, fiar_user:get_id(User)}]),
   MatchesAsP1 ++ MatchesAsP2.
 
+current_matches(User) ->
+  MatchesAsP1 = sumo:find_by(fiar_match, [{player1, fiar_user:get_id(User)},
+                                          {status, on_course}]),
+  MatchesAsP2 = sumo:find_by(fiar_match, [{player2, fiar_user:get_id(User)},
+                                          {status, on_course}]),
+  MatchesAsP1 ++ MatchesAsP2.
+
 delete_match(MatchId, User) ->
   try
     Match = get_match(MatchId, User),
     sumo:call(fiar_match, fiar_delete, [Match])
   catch
-    _:Ex -> lager:info("Match error: ~p", [Ex]), throw(Ex)
+    _:notfound -> notfound;
+    _:Ex -> throw(Ex)
   end.

@@ -21,6 +21,7 @@
         , send_event/3
         , broadcast/2
         , delete_match/2
+        , current_matches/1
         ]).
 
 -spec start() -> ok | {error, term()}.
@@ -80,6 +81,9 @@ broadcast(EventName, Content) ->
 
 delete_match(MatchId, User) ->
   fiar_match_repo:delete_match(MatchId, User).
+
+current_matches(User) ->
+  fiar_match_repo:current_matches(User).
 
 start_cowboy_listeners() ->
   Dispatch = cowboy_router:compile([

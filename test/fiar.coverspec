@@ -1,20 +1,22 @@
 %% Specific modules to include in cover.
 {
  incl_mods,
- [
-  fiar_match,
-  fiar_match_repo,
-  fiar_user,
-  fiar_user_repo,
-  fiar,
-  fiar_auth,
-  fiar_core,
-  fiar_sup,
-  fiar_matches_handler,
-  fiar_single_match_handler,
-  fiar_users_handler,
-  fiar_notify_handler,
-  fiar_utils,
-  fiar_event_handler
+ [ fiar_match
+ , fiar_match_repo
+ , fiar_user
+ , fiar_user_repo
+ , fiar
+ , fiar_auth
+ , fiar_core
+ , fiar_event_handler
+ , fiar_events
+ , fiar_matches_handler
+ , fiar_notify_handler
+ , fiar_notify_user_handler
+ , fiar_repo_mysql
+ , fiar_single_match_handler
+ , fiar_sup
+ , fiar_users_handler
+ , fiar_utils
  ]
 }.

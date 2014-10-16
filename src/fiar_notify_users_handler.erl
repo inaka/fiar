@@ -40,23 +40,15 @@ init(_InitArgs, _LastEventId, Req) ->
   end.
 
 handle_notify({user_conected, User}, State) ->
-  UserJson = jiffy:encode(fiar_user:to_json_no_pass(User)),
+  UserJson = jiffy:encode(fiar_user:to_json(User, public)),
   {send, [{data, UserJson}, {name, <<"user_conected">>}], State};
 handle_notify({user_disconnected, User}, State) ->
-  UserJson = jiffy:encode(fiar_user:to_json_no_pass(User)),
+  UserJson = jiffy:encode(fiar_user:to_json(User, public)),
   {send, [{data, UserJson}, {name, <<"user_disconnected">>}], State};
 handle_notify({match_started, Match}, State) ->
-  case is_mine(Match, maps:get(user, State)) of
-    true -> erlang:put(current_match, fiar_match:get_id(Match));
-    false -> ok
-  end,
   MatchJson = jiffy:encode(fiar_match:to_json(Match)),
   {send, [{data, MatchJson}, {name, <<"match_started">>}], State};
 handle_notify({match_ended, Match}, State) ->
-  case is_mine(Match, maps:get(user, State)) of
-    true -> erlang:erase(current_match);
-    false -> ok
-  end,
   MatchJson = jiffy:encode(fiar_match:to_json(Match)),
   {send, [{data, MatchJson}, {name, <<"match_ended">>}], State}.
 
@@ -93,19 +85,17 @@ get_connected_users() ->
   [get_connected_user(Pid) || Pid <- Pids].
 
 get_connected_user(Pid) ->
-  [{registered_name, Name}, {dictionary, Dict}] =
-    erlang:process_info(Pid, [registered_name, dictionary]),
+  [{registered_name, Name}] =
+    erlang:process_info(Pid, [registered_name]),
   User = process_name_to_user(Name),
-  CurrentMatchId = 
-    case proplists:get_value(current_match, Dict) of
-      undefined -> [];
-      Val -> Val
-    end,
-  User1 = fiar_user:to_json_no_pass(User),
-  {[{user, User1}, {current_match, CurrentMatchId}]}.
+  User1 = fiar_user:to_json(User, public),
+  CurrentMatches = fiar:current_matches(User),
+  CurrentMatchesJson = fiar_match:matches_to_json(CurrentMatches),
+  Response = [{user, User1}, {current_matches, CurrentMatchesJson}],
+  {Response}.
 
-is_mine(Match, User) ->
-  fiar_user:get_id(User) == fiar_match:get_player(Match).
+% is_mine(Match, User) ->
+%   fiar_user:get_id(User) == fiar_match:get_player(Match).
 
 process_name_to_user(Proc) ->
   "fiar_user_" ++ UserIdStr = atom_to_list(Proc),

@@ -73,6 +73,7 @@
         , get_events_no_authentication/1
         , delete_match_invalid_user/1
         , delete_match/1
+        , current_match_in_first_event/1
         ]).
 
 -spec all() -> [atom()].
@@ -106,6 +107,7 @@ init_per_testcase(match_ended_event, Config) -> authenticated(Config);
 init_per_testcase(get_events_no_authentication, Config) -> authenticated(Config);
 init_per_testcase(delete_match_invalid_user, Config) -> authenticated(Config);
 init_per_testcase(delete_match, Config) -> authenticated(Config);
+init_per_testcase(current_match_in_first_event, Config) -> basic(Config);
 init_per_testcase(start, Config) -> authenticated(Config).
 
 basic(Config) ->
@@ -712,10 +714,16 @@ get_events(Config) ->
   end.
 
 -spec get_events_no_authentication(config()) -> ok.
-get_events_no_authentication(_Config) ->
+get_events_no_authentication(Config) ->
   Headers1 = #{<<"content-type">> => <<"application/json">>},
+  % Get match and player1
+  Player1 = proplists:get_value(username, Config),
+  Headers2 = #{<<"content-type">> => <<"application/json">>,
+              basic_auth => {Player1, "bad_pass"}},
   {ok, #{status_code := 401}} =
     api_call(get, "/events", Headers1),
+  {ok, #{status_code := 401}} =
+    api_call(get, "/events", Headers2),
   ok.
 
 -spec get_connections(config()) -> ok.
@@ -736,9 +744,8 @@ get_connections(Config) ->
     timer:sleep(500),
     [{ _, _, EventBin1}, { _, _, EventBin2}] = shotgun:events(Pid1),
     Event1 = shotgun:parse_event(EventBin1),
-    [Data] = jiffy:decode(maps:get(data, Event1), [return_maps]),
-    [] = maps:get(<<"current_match">>, Data),
-    true = is_map(maps:get(<<"user">>, Data)),
+    [UserData] = jiffy:decode(maps:get(data, Event1), [return_maps]),
+    true = is_map(maps:get(<<"user">>, UserData)),
     Event2 = shotgun:parse_event(EventBin2),
     <<"user_conected">> = maps:get(event, Event2),
     ok
@@ -778,9 +785,8 @@ user_disconnected(Config) ->
  
     [{ _, _, EventBin1}, { _, _, EventBin2}, _] = shotgun:events(Pid1),
     Event1 = shotgun:parse_event(EventBin1),
-    [Data] = jiffy:decode(maps:get(data, Event1), [return_maps]),
-    [] = maps:get(<<"current_match">>, Data),
-    true = is_map(maps:get(<<"user">>, Data)),
+    [UserData] = jiffy:decode(maps:get(data, Event1), [return_maps]),
+    true = is_map(maps:get(<<"user">>, UserData)),
 
     Event2 = shotgun:parse_event(EventBin2),
     <<"user_conected">> = maps:get(event, Event2),
@@ -939,7 +945,7 @@ delete_match(Config) ->
     % Get events (Broadcast)
     [_, _] = shotgun:events(Pid1),
     % Delete match
-    {ok, #{status_code := 200}} =
+    {ok, #{status_code := 204}} =
       api_call(delete, "/matches/" ++ Mid, Headers2),
     timer:sleep(500),
     % Get matchs events - player2
@@ -952,10 +958,13 @@ delete_match(Config) ->
     [{ _, _, EventBin3}] = shotgun:events(Pid1),
     Event3 = shotgun:parse_event(EventBin3),
     <<"match_ended">> = maps:get(event, Event3),
-    % % player1 played in bad match
+    % player1 played in bad match
     UserBody1 = jiffy:encode(#{column => 1}),
     {ok, #{status_code := 404}} =
            api_call(put, "/matches/" ++ Mid, Headers1, UserBody1),
+    % Delete match
+    {ok, #{status_code := 204}} =
+      api_call(delete, "/matches/" ++ Mid, Headers2),
     ok
   catch
     _:Ex -> throw({error, Ex})
@@ -963,6 +972,66 @@ delete_match(Config) ->
     shotgun:close(Pid1),
     shotgun:close(Pid2),
     shotgun:close(Pid3)
+  end.
+
+-spec current_match_in_first_event(config()) -> ok.
+current_match_in_first_event(_Config) ->
+  Headers = #{<<"content-type">> => <<"application/json">>},
+  Name = ktn_random:generate(),
+  UserBody = jiffy:encode(#{username => Name}),
+  {ok, #{status_code := 200, body := User1}} =
+         api_call(post, "/users", Headers, UserBody),
+  BodyDecode = jiffy:decode(User1, [return_maps]),
+  Pass = maps:get(<<"pass">>, BodyDecode),
+  Headers1 = #{<<"content-type">> => <<"application/json">>,
+               basic_auth => {Name, Pass}},
+  Name2 = ktn_random:generate(),
+  UserBody2 = jiffy:encode(#{username => Name2}),
+  {ok, #{status_code := 200}} =
+         api_call(post, "/users", Headers, UserBody2),
+
+  % Get events
+  {ok, Pid1} = shotgun:open("localhost", 8080),
+  try
+    ct:comment("When just created, user1 should have no current matches"),
+    {ok, _Ref1} = shotgun:get( Pid1
+                             , "/events"
+                             , Headers1
+                             , #{ async => true
+                                , async_mode => sse}),
+    timer:sleep(500),
+    [{_, _, EventBin1} | _] = shotgun:events(Pid1),
+    Event1 = shotgun:parse_event(EventBin1),
+    [User1Data] = jiffy:decode(maps:get(data, Event1), [return_maps]),
+    [] = maps:get(<<"current_matches">>, User1Data)
+  after
+    shotgun:close(Pid1)
+  end,
+
+  ct:comment("After he starts playing a game, user1 should have 1 match"),
+  
+  Body = jiffy:encode(#{player2 => Name2}),
+  {ok, #{status_code := 200, body := Match}} =
+    api_call(post, "/matches", Headers1, Body),
+  MatchDecode = jiffy:decode(Match, [return_maps]),
+  Mid = maps:get(<<"id">>, MatchDecode),
+
+  {ok, Pid2} = shotgun:open("localhost", 8080),
+  try
+    {ok, _Ref2} = shotgun:get( Pid2
+                             , "/events"
+                             , Headers1
+                             , #{ async => true
+                                , async_mode => sse}),
+    timer:sleep(500),
+    [{_, _, EventBin2} | _] = shotgun:events(Pid2),
+    Event2 = shotgun:parse_event(EventBin2),
+    [User1Data2] = jiffy:decode(maps:get(data, Event2), [return_maps]),
+    [NewMatch] = maps:get(<<"current_matches">>, User1Data2),
+    true = (Mid == maps:get(<<"id">>, NewMatch)),
+    ok
+  after
+    shotgun:close(Pid2)
   end.
 
 -spec complete_coverage(config()) -> ok.

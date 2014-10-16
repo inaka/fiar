@@ -1009,7 +1009,7 @@ current_match_in_first_event(_Config) ->
   end,
 
   ct:comment("After he starts playing a game, user1 should have 1 match"),
-  
+
   Body = jiffy:encode(#{player2 => Name2}),
   {ok, #{status_code := 200, body := Match}} =
     api_call(post, "/matches", Headers1, Body),
@@ -1032,7 +1032,9 @@ current_match_in_first_event(_Config) ->
     ok
   after
     shotgun:close(Pid2)
-  end.
+  end,
+  ct:comment(""),
+  ok.
 
 -spec complete_coverage(config()) -> ok.
 complete_coverage(Config) ->

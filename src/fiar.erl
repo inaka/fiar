@@ -17,12 +17,16 @@
         , get_matches/1
         , new_user/1
         , find_user/1
-        , notify/3
+        , notify/4
+        , send_event/3
+        , broadcast/2
+        , delete_match/2
+        , current_matches/1
         ]).
 
 -spec start() -> ok | {error, term()}.
 start() ->
-  application:ensure_all_started(fiar),
+  {ok, _} = application:ensure_all_started(fiar),
   sumo:create_schema().
 
 -spec stop() -> ok | {error, term()}.
@@ -32,6 +36,7 @@ stop() -> application:stop(fiar).
 start(normal, _Args) ->
   {ok, Pid} = fiar_sup:start_link(),
   start_cowboy_listeners(),
+  fiar_notify_users_handler:setup(),
   {ok, Pid}.
 
 -spec stop(atom()) -> ok.
@@ -60,21 +65,41 @@ get_match(MatchId, User) ->
 get_matches(User) ->
   fiar_match_repo:get_matches(User).
 
+find_user(UserId) when is_integer(UserId) ->
+  fiar_user_repo:find_by_id(UserId);
 find_user(Username) ->
   fiar_user_repo:find_by_username(Username).
 
-notify(MatchId, UserId, Match) ->
-  fiar_notify_handler:notify(MatchId, UserId, Match).
+notify(EventName, MatchId, UserId, Match) ->
+  fiar_notify_handler:notify(EventName, MatchId, UserId, Match).
+
+send_event(Module, EventName, Content) ->
+  fiar_events:notify(Module, EventName, Content).
+
+broadcast(EventName, Content) ->
+  fiar_notify_users_handler:broadcast(EventName, Content).
+
+delete_match(MatchId, User) ->
+  fiar_match_repo:delete_match(MatchId, User).
+
+current_matches(User) ->
+  fiar_match_repo:current_matches(User).
 
 start_cowboy_listeners() ->
   Dispatch = cowboy_router:compile([
-    {'_', [{"/matches", fiar_matches_handler, []},
-           {"/matches/:match_id", fiar_single_match_handler, []},
-           {"/users", fiar_users_handler, []},
-           { "/matches/:match_id/events"
-           , lasse_handler
-           , [fiar_notify_handler]}
-          ]}
+    {'_', [ { "/matches", fiar_matches_handler, []}
+          , { "/matches/:match_id", fiar_single_match_handler, []}
+          , { "/users", fiar_users_handler, []}
+          , { "/matches/:match_id/events"
+            , lasse_handler
+            , [fiar_notify_handler]
+            }
+          , { "/events"
+            , lasse_handler
+            , [fiar_notify_users_handler]
+            }
+          ]
+    }
   ]),
   cowboy:start_http(fiar_http_listener, 100, [{port, 8080}],
     [{env, [{dispatch, Dispatch}]}]

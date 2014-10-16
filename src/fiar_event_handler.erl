@@ -20,9 +20,7 @@
 %%      fiar_events event manager
 -spec start_link() -> {ok, pid()}.
 start_link() -> 
-  {ok, Pid} = gen_event:start_link({local, fiar_events}),
-  gen_event:add_handler(fiar_events, fiar_event_handler, {}),
-  {ok, Pid}.
+  {ok, _} = fiar_events:start_link().
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Callback implementation
@@ -34,9 +32,55 @@ init({}) ->
 -spec handle_event({module(), atom(), term()}, state()) -> {ok, state()}.
 handle_event({fiar_match, updated, [Match]}, State) ->
   try
+    notify_if_ended(Match),
     MatchId = fiar_match:get_id(Match),
     UserId = fiar_match:get_player(Match),
-    fiar:notify(MatchId, UserId, Match)
+    fiar:notify(match_updated, MatchId, UserId, Match)
+  catch
+    _:Exception ->
+      lager:warning(
+        "Could not deliver notification: ~p~nStack: ~p",
+        [Exception, erlang:get_stacktrace()])
+  end,
+  {ok, State};
+handle_event({fiar_match, created, [Match]}, State) ->
+  try
+    fiar:broadcast(match_started, Match)
+  catch
+    _:Exception ->
+      lager:warning(
+        "Could not deliver notification: ~p~nStack: ~p",
+        [Exception, erlang:get_stacktrace()])
+  end,
+  {ok, State};
+handle_event({fiar_match, deleted, [Match]}, State) ->
+  try
+    MatchId = fiar_match:get_id(Match),
+    Player1 = fiar_match:get_player1(Match),
+    Player2 = fiar_match:get_player2(Match),
+    fiar:notify(match_deleted, MatchId, Player1, Match),
+    fiar:notify(match_deleted, MatchId, Player2, Match),
+    fiar:broadcast(match_ended, Match)
+  catch
+    _:Exception ->
+      lager:warning(
+        "Could not deliver notification: ~p~nStack: ~p",
+        [Exception, erlang:get_stacktrace()])
+  end,
+  {ok, State};
+handle_event({fiar_user, connected, [User]}, State) ->
+  try
+    fiar:broadcast(user_conected, User)
+  catch
+    _:Exception ->
+      lager:warning(
+        "Could not deliver notification: ~p~nStack: ~p",
+        [Exception, erlang:get_stacktrace()])
+  end,
+  {ok, State};
+handle_event({fiar_user, disconnected, [User]}, State) ->
+  try
+    fiar:broadcast(user_disconnected, User)
   catch
     _:Exception ->
       lager:warning(
@@ -71,3 +115,13 @@ terminate(_Reason, _State) ->
   {ok, state()}.
 code_change(_OldVsn, State, _Extra) ->
   {ok, State}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Private Functions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+notify_if_ended(Match) ->
+  case fiar_match:get_status(Match) of
+    on_course -> ok;
+    _ -> fiar:broadcast(match_ended, Match)
+  end.

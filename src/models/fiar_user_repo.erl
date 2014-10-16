@@ -3,6 +3,7 @@
 -export([ create/1
         , get/2
         , find_by_username/1
+        , find_by_id/1
         ]).
 
 -type user() ::
@@ -37,4 +38,11 @@ find_by_username(Username) ->
   case sumo:find_by(fiar_user, [{username, Username}]) of
     [User] -> User;
     _      -> notfound
+  end.
+
+-spec find_by_id(integer()) -> notfound | user().
+find_by_id(UserId) ->
+  case sumo:find(fiar_user, UserId) of
+    notfound -> throw(notfound);
+    User -> User
   end.

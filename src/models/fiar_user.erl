@@ -8,7 +8,7 @@
 -export(
   [ new/1
   , get_id/1
-  , to_json/1
+  , to_json/2
   ]).
 %%% Behaviour callbacks.
 -export([sumo_schema/0, sumo_wakeup/1, sumo_sleep/1]).
@@ -63,8 +63,10 @@ new(Username) ->
 
 get_id(User) -> proplists:get_value(id, User).
 
-to_json(User) ->
-  { [to_json_attr(K, V) || {K, V} <- User] }.
+to_json(User, private) ->
+  { [to_json_attr(K, V) || {K, V} <- User] };
+to_json(User, public) ->
+  { [to_json_attr(K, V) || {K, V} <- User, K /= pass] }.
 
 to_json_attr(K, {datetime, DT}) -> {K, fiar_utils:datetime_to_json(DT)};
 to_json_attr(K, V) -> {K, V}.

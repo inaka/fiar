@@ -1,15 +1,15 @@
 -module (fiar_single_match_handler).
 
 -export(
- [
-  init/3,
-  rest_init/2,
-  allowed_methods/2,
-  content_types_accepted/2,
-  content_types_provided/2,
-  is_authorized/2,
-  handle_get/2,
-  handle_put/2
+ [ init/3
+ , rest_init/2
+ , allowed_methods/2
+ , content_types_accepted/2
+ , content_types_provided/2
+ , is_authorized/2
+ , handle_get/2
+ , handle_put/2
+ , delete_resource/2
  ]
 ).
 
@@ -21,7 +21,7 @@ rest_init(Req, State) ->
   {ok, Req, State}. 
 
 allowed_methods(Req, State) ->
-  {[<<"GET">>, <<"PUT">>, <<"OPTIONS">>], Req, State}.
+  {[<<"GET">>, <<"PUT">>, <<"DELETE">>, <<"OPTIONS">>], Req, State}.
 
 content_types_accepted(Req, State) ->
   {[
@@ -30,7 +30,11 @@ content_types_accepted(Req, State) ->
    Req, State}.
 
 content_types_provided(Req, State) ->
-  {[{{<<"application">>, <<"json">>, []}, handle_get}], Req, State}.
+  {[
+    {{<<"application">>, <<"json">>, []}, handle_get}
+   ],
+   Req,
+   State}.
 
 is_authorized(Req, State) ->
   case fiar_auth:check_auth(Req) of
@@ -69,5 +73,18 @@ handle_put(Req, State) ->
   catch
     _:Exception ->
       lager:warning("Exception in PUT: ~p~n", [Exception]),
+      fiar_utils:handle_exception(Exception, Req1, State)
+  end.
+
+delete_resource(Req, State) ->
+  {MatchIdBin, Req1} = cowboy_req:binding(match_id, Req),
+  try
+    MatchId = binary_to_integer(MatchIdBin, 10),
+    User = maps:get(user, State),
+    fiar:delete_match(MatchId, User),
+    {true, Req1, State}
+  catch
+    _:Exception ->
+      lager:warning("Exception in DELETE: ~p~n", [Exception]),
       fiar_utils:handle_exception(Exception, Req1, State)
   end.

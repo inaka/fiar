@@ -35,13 +35,12 @@ credentials(Req) ->
   try cowboy_req:parse_header(<<"authorization">>, Req) of
     {ok, {<<"basic">>, Credentials}, _} ->
       Credentials;
-    {ok, undefined, _} ->
-        case cowboy_req:cookie(<<"auth">>, Req) of
+    {ok, undefined, Req1} ->
+        case cowboy_req:cookie(<<"auth">>, Req1) of
           {undefined, _} -> undefined;
           {Token, _} -> 
             parse_cookie_auth(Token)
         end
-      % lager:info("fiar_notify_users_handler: user ~p, pass ~p", [User, Pass]),
   catch
     _:Exception ->
       ErrorMsg = "error trying to check auth: ~p~n\tStack: ~p~n",

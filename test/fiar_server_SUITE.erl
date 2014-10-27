@@ -1095,7 +1095,7 @@ get_events_with_cookie(Config) ->
     Event1 = shotgun:parse_event(EventBin1),
     [User1Data] = jiffy:decode(maps:get(data, Event1), [return_maps]),
     NewUser = maps:get(<<"user">>, User1Data),
-    {PlayerId,PlayerId} = {maps:get(<<"id">>, NewUser),PlayerId},
+    PlayerId = maps:get(<<"id">>, NewUser),
     ok
   after
     shotgun:close(Pid1),

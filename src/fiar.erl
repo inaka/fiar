@@ -6,6 +6,7 @@
 -type user() :: fiar_user_repo:user().
 -type player() :: fiar_match:player().
 -type username() :: fiar_user:username().
+-type pass() :: fiar_user:pass().
 
 -export([ start/0
         , stop/0
@@ -15,7 +16,7 @@
         , play/3
         , get_match/2
         , get_matches/1
-        , new_user/1
+        , new_user/2
         , find_user/1
         , notify/4
         , send_event/3
@@ -47,9 +48,9 @@ stop(_State) ->
 start_match(User1, User2) ->
   fiar_match_repo:start(User1, User2).
 
--spec new_user(username()) -> user().
-new_user(Username) ->
-  fiar_user_repo:create(Username).
+-spec new_user(username(), pass()) -> user().
+new_user(Username, Pass) ->
+  fiar_user_repo:create(Username, Pass).
 
 -spec play(match(), fiar_core:col(), fiar_user:user()) -> won | drawn | next.
 play(Mid, Col, User) ->
@@ -87,17 +88,13 @@ current_matches(User) ->
 
 start_cowboy_listeners() ->
   Dispatch = cowboy_router:compile([
-    {'_', [ { "/matches", fiar_matches_handler, []}
-          , { "/matches/:match_id", fiar_single_match_handler, []}
-          , { "/users", fiar_users_handler, []}
-          , { "/matches/:match_id/events"
-            , lasse_handler
-            , [fiar_notify_handler]
-            }
-          , { "/events"
-            , lasse_handler
-            , [fiar_notify_users_handler]
-            }
+    {'_', [{"/matches", fiar_matches_handler, []},
+           {"/matches/:match_id", fiar_single_match_handler, []},
+           {"/users", fiar_users_handler, []},
+           {<<"/">>, cowboy_static, {file, "./priv/static/index.html"}},
+           {"/priv/static/[...]", cowboy_static, {dir, "priv/static/"}},
+           { "/matches/:match_id/events", lasse_handler, [fiar_notify_handler]},
+           { "/events", lasse_handler, [fiar_notify_users_handler]}
           ]
     }
   ]),

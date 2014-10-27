@@ -87,12 +87,16 @@ get_connected_users() ->
 get_connected_user(Pid) ->
   [{registered_name, Name}] =
     erlang:process_info(Pid, [registered_name]),
-  User = process_name_to_user(Name),
-  User1 = fiar_user:to_json(User, public),
-  CurrentMatches = fiar:current_matches(User),
-  CurrentMatchesJson = fiar_match:matches_to_json(CurrentMatches),
-  Response = [{user, User1}, {current_matches, CurrentMatchesJson}],
-  {Response}.
+  case Name of
+    [] -> unregistered;
+    Name ->
+      User = process_name_to_user(Name),
+      User1 = fiar_user:to_json(User, public),
+      CurrentMatches = fiar:current_matches(User),
+      CurrentMatchesJson = fiar_match:matches_to_json(CurrentMatches),
+      Response = [{user, User1}, {current_matches, CurrentMatchesJson}],
+      {Response}
+  end.
 
 process_name_to_user(Proc) ->
   "fiar_user_" ++ UserIdStr = atom_to_list(Proc),

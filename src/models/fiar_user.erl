@@ -6,7 +6,7 @@
 
 %%% Public API
 -export(
-  [ new/1
+  [ new/2
   , get_id/1
   , to_json/2
   ]).
@@ -53,9 +53,8 @@ sumo_wakeup(User) ->
 %% PUBLIC API
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Creates, stores and returns a news flash.
-new(Username) ->
+new(Username, Pass) ->
   Now = {datetime, calendar:universal_time()},
-  Pass = ktn_random:generate(),
   [ {username,    Username}
   , {pass,        Pass}
   , {created_at,  Now}

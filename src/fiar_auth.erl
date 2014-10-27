@@ -35,11 +35,26 @@ credentials(Req) ->
   try cowboy_req:parse_header(<<"authorization">>, Req) of
     {ok, {<<"basic">>, Credentials}, _} ->
       Credentials;
-    {ok, undefined, _Req1} ->
-      undefined
+    {ok, undefined, Req1} ->
+        case cowboy_req:cookie(<<"auth">>, Req1) of
+          {undefined, _} -> undefined;
+          {Token, _} -> 
+            parse_cookie_auth(Token)
+        end
   catch
     _:Exception ->
       ErrorMsg = "error trying to check auth: ~p~n\tStack: ~p~n",
       lager:warning(ErrorMsg, [Exception, erlang:get_stacktrace()]),
       throw(Exception)
+  end.
+
+parse_cookie_auth(Token) ->
+  try base64:decode(Token) of
+    UserPass -> 
+      case binary:split(UserPass, <<":">>) of
+        [User, Pass] -> {User, Pass};
+        _ -> undefined
+      end
+  catch
+    _:_ -> undefined
   end.

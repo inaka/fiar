@@ -1,6 +1,6 @@
 -module (fiar_user_repo).
 
--export([ create/1
+-export([ create/2
         , get/2
         , find_by_username/1
         , find_by_id/1
@@ -17,10 +17,10 @@
 
 -export_type([user/0]).
 
-create(Username) ->
+create(Username, Pass) ->
   case find_by_username(Username) of
     notfound -> 
-      NewUser = fiar_user:new(Username),
+      NewUser = fiar_user:new(Username, Pass),
       sumo:persist(fiar_user, NewUser);
     _User ->
       throw(conflict)

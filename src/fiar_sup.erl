@@ -26,7 +26,8 @@ init([]) ->
        [fiar_event_handler]
       },
   {ok, {{one_for_one, 10, 60},
-    [KatanaRandom,
-     GenEvent]
+    [ KatanaRandom
+    , GenEvent
+    ]
     }
   }.

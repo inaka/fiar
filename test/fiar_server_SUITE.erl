@@ -74,6 +74,7 @@
         , delete_match_invalid_user/1
         , delete_match/1
         , current_match_in_first_event/1
+        , get_events_with_cookie/1
         ]).
 
 -spec all() -> [atom()].
@@ -108,6 +109,7 @@ init_per_testcase(get_events_no_authentication, Config) -> authenticated(Config)
 init_per_testcase(delete_match_invalid_user, Config) -> authenticated(Config);
 init_per_testcase(delete_match, Config) -> authenticated(Config);
 init_per_testcase(current_match_in_first_event, Config) -> basic(Config);
+init_per_testcase(get_events_with_cookie, Config) -> authenticated(Config);
 init_per_testcase(start, Config) -> authenticated(Config).
 
 basic(Config) ->
@@ -121,23 +123,24 @@ authenticated(Config) ->
   % Create user 1
   Headers = #{<<"content-type">> => <<"application/json">>},
   Name1 = ktn_random:generate(),
-  UserBody = jiffy:encode(#{username => Name1}),
+  Pass = ktn_random:generate(),
+  UserBody = jiffy:encode(#{username => Name1, pass => Pass}),
   {ok, #{status_code := 200, body := User1}} =
     api_call(post, "/users", Headers, UserBody),
 
   % Ccreate user 2
   Name2 = ktn_random:generate(),
-  User2Body = jiffy:encode(#{username => Name2}),
+  User2Body = jiffy:encode(#{username => Name2, pass => Pass}),
   {ok, #{status_code := 200, body := User2}} =
     api_call(post, "/users", Headers, User2Body),
   BodyDecode2 = jiffy:decode(User2, [return_maps]),
   Pass2 = maps:get(<<"pass">>, BodyDecode2),
+  Id2 = maps:get(<<"id">>, BodyDecode2),
 
   % Create match
   BodyDecode = jiffy:decode(User1, [return_maps]),
   Username = maps:get(<<"username">>, BodyDecode),
-  Id1 = maps:get(<<"id">>, BodyDecode),
-
+  
   Pass = maps:get(<<"pass">>, BodyDecode),
   Headers1 = #{<<"content-type">> => <<"application/json">>,
               basic_auth => {Username, Pass}},
@@ -149,7 +152,7 @@ authenticated(Config) ->
 
   [{username, Name2},
    {pass, Pass2},
-   {id1, Id1},
+   {id, Id2},
    {username2, Username},
    {pass2, Pass},
    {match_id, Mid} | Config].
@@ -162,7 +165,8 @@ end_per_testcase(_, Config) ->
 create_user(_Config) ->
   Headers = #{<<"content-type">> => <<"application/json">>},
   Name = ktn_random:generate(),
-  Body = jiffy:encode(#{username => Name}),
+  Pass = ktn_random:generate(),
+  Body = jiffy:encode(#{username => Name, pass => Pass}),
   {ok, #{status_code := 200}} =
     api_call(post, "/users", Headers, Body),
   ok.
@@ -171,7 +175,8 @@ create_user(_Config) ->
 unique_user(_Config) ->
   Headers = #{<<"content-type">> => <<"application/json">>},
   Name = ktn_random:generate(),
-  Body = jiffy:encode(#{username => Name}),
+  Pass = ktn_random:generate(),
+  Body = jiffy:encode(#{username => Name, pass => Pass}),
   {ok, #{status_code := 200}} =
     api_call(post, "/users", Headers, Body),
   {ok, #{status_code := 409}} =
@@ -206,7 +211,8 @@ bad_credentials(_Config) ->
          api_call(get, "/matches", HeadersInv),
   % Crate user
   Name = ktn_random:generate(),
-  UserBody = jiffy:encode(#{username => Name}),
+  Pass = ktn_random:generate(),
+  UserBody = jiffy:encode(#{username => Name, pass => Pass}),
   {ok, #{status_code := 200, body := User}} =
          api_call(post, "/users", Headers, UserBody),
   BodyDecode = jiffy:decode(User, [return_maps]),         
@@ -228,12 +234,13 @@ bad_credentials(_Config) ->
 get_matches(_Config) ->
   Headers = #{<<"content-type">> => <<"application/json">>},
   Name1 = ktn_random:generate(),
-  UserBody = jiffy:encode(#{username => Name1}),
+  Pass = ktn_random:generate(),
+  UserBody = jiffy:encode(#{username => Name1, pass => Pass}),
   {ok, #{status_code := 200, body := User1}} =
     api_call(post, "/users", Headers, UserBody),
   
   Name2 = ktn_random:generate(),
-  User2Body = jiffy:encode(#{username => Name2}),
+  User2Body = jiffy:encode(#{username => Name2, pass => Pass}),
   {ok, #{status_code := 200, body := User2}} =
     api_call(post, "/users", Headers, User2Body),
   
@@ -267,7 +274,7 @@ get_matches(_Config) ->
   [_] = jiffy:decode(RespBody2),
 
   Name3 = ktn_random:generate(),
-  User3Body = jiffy:encode(#{username => Name3}),
+  User3Body = jiffy:encode(#{username => Name3, pass => Pass}),
   {ok, #{status_code := 200, body := User3}} =
     api_call(post, "/users", Headers, User3Body),
 
@@ -296,7 +303,8 @@ get_status(_Config) ->
   % Create user
   Headers = #{<<"content-type">> => <<"application/json">>},
   Name1 = ktn_random:generate(),
-  UserBody = jiffy:encode(#{username => Name1}),
+  Pass = ktn_random:generate(),
+  UserBody = jiffy:encode(#{username => Name1, pass => Pass}),
   {ok, #{status_code := 200, body := User}} =
     api_call(post, "/users", Headers, UserBody),
   % Create match
@@ -322,7 +330,8 @@ first_play(_Config) ->
   % Create user
   Headers = #{<<"content-type">> => <<"application/json">>},
   Name1 = ktn_random:generate(),
-  UserBody = jiffy:encode(#{username => Name1}),
+  Pass = ktn_random:generate(),
+  UserBody = jiffy:encode(#{username => Name1, pass => Pass}),
   {ok, #{status_code := 200, body := User}} =
     api_call(post, "/users", Headers, UserBody),
   % Create match
@@ -642,7 +651,8 @@ get_event_invalid_player(Config) ->
   % Create player2
   Headers = #{<<"content-type">> => <<"application/json">>},
   Player2 = ktn_random:generate(),
-  User2Body = jiffy:encode(#{username => Player2}),
+  Pass = ktn_random:generate(),
+  User2Body = jiffy:encode(#{username => Player2, pass => Pass}),
   {ok, #{status_code := 200, body := User2}} =
     api_call(post, "/users", Headers, User2Body),
   BodyDecode2 = jiffy:decode(User2, [return_maps]),
@@ -698,19 +708,28 @@ get_events(Config) ->
               basic_auth => {Player1, Pass1}},
 
   {ok, Pid1} = shotgun:open("localhost", 8080),
+  {ok, Pid2} = shotgun:open("localhost", 8080),
   try
     {ok, Ref1} = shotgun:get( Pid1
                             , "/events"
                             , Headers1
                             , #{ async => true
                                , async_mode => sse}),
-    timer:sleep(500),
     true = erlang:is_list(shotgun:events(Pid1)),
+    timer:sleep(500),
+    shotgun:get( Pid2
+                            , "/events"
+                            , Headers1
+                            , #{ async => true
+                               , async_mode => sse}),
+    timer:sleep(500),
+    [{_, _, _}, {_, _, _}] = shotgun:events(Pid2),
     ok
   catch
     _:Ex -> throw({error, Ex})
   after
-    shotgun:close(Pid1)
+    shotgun:close(Pid1),
+    shotgun:close(Pid2)
   end.
 
 -spec get_events_no_authentication(config()) -> ok.
@@ -881,7 +900,8 @@ delete_match_invalid_user(Config) ->
   % Create a player
   Headers = #{<<"content-type">> => <<"application/json">>},
   Name = ktn_random:generate(),
-  UserBody = jiffy:encode(#{username => Name}),
+  Pass = ktn_random:generate(),
+  UserBody = jiffy:encode(#{username => Name, pass => Pass}),
   {ok, #{status_code := 200, body := User}} =
          api_call(post, "/users", Headers, UserBody),
   BodyDecode = jiffy:decode(User, [return_maps]),
@@ -978,7 +998,8 @@ delete_match(Config) ->
 current_match_in_first_event(_Config) ->
   Headers = #{<<"content-type">> => <<"application/json">>},
   Name = ktn_random:generate(),
-  UserBody = jiffy:encode(#{username => Name}),
+  Pass = ktn_random:generate(),
+  UserBody = jiffy:encode(#{username => Name, pass => Pass}),
   {ok, #{status_code := 200, body := User1}} =
          api_call(post, "/users", Headers, UserBody),
   BodyDecode = jiffy:decode(User1, [return_maps]),
@@ -986,7 +1007,7 @@ current_match_in_first_event(_Config) ->
   Headers1 = #{<<"content-type">> => <<"application/json">>,
                basic_auth => {Name, Pass}},
   Name2 = ktn_random:generate(),
-  UserBody2 = jiffy:encode(#{username => Name2}),
+  UserBody2 = jiffy:encode(#{username => Name2, pass => Pass}),
   {ok, #{status_code := 200}} =
          api_call(post, "/users", Headers, UserBody2),
 
@@ -1036,6 +1057,53 @@ current_match_in_first_event(_Config) ->
   ct:comment(""),
   ok.
 
+-spec get_events_with_cookie(config()) -> ok.
+get_events_with_cookie(Config) ->
+  % User info
+  Player1 = proplists:get_value(username, Config),
+  Pass1 = proplists:get_value(pass, Config),
+  PlayerId = proplists:get_value(id, Config),
+  TokenString = Player1 ++ ":" ++ Pass1,
+  CookieString = "auth=" ++ binary_to_list(base64:encode(TokenString)),
+  Headers1 = #{ <<"content-type">> => <<"application/json">>
+              , <<"Cookie">> => <<"auth=123123">>
+              },
+  Headers2 = #{ <<"content-type">> => <<"application/json">>
+              , <<"Cookie">> => list_to_binary(CookieString)
+              },
+  % Generate Cookie
+  {ok, Pid1} = shotgun:open("localhost", 8080),
+  {ok, Pid2} = shotgun:open("localhost", 8080),
+  try
+    {ok, _} = 
+      shotgun:get( Pid1
+                 , "/events"
+                 , Headers1
+                 , #{ async => true
+                    , async_mode => sse}),
+    timer:sleep(500),
+    [Event] = shotgun:events(Pid1),
+    401 = maps:get(status_code, Event),
+    {ok, _} = 
+      shotgun:get( Pid2
+                 , "/events"
+                 , Headers2
+                 , #{ async => true
+                    , async_mode => sse}),
+    timer:sleep(500),
+    [{_, _, EventBin1}, {_, _, EventBin2}] = shotgun:events(Pid2),
+    Event1 = shotgun:parse_event(EventBin1),
+    [User1Data] = jiffy:decode(maps:get(data, Event1), [return_maps]),
+    NewUser = maps:get(<<"user">>, User1Data),
+    PlayerId = maps:get(<<"id">>, NewUser),
+    ok
+  after
+    shotgun:close(Pid1),
+    shotgun:close(Pid2)
+  end.
+
+  % Request to /events
+
 -spec complete_coverage(config()) -> ok.
 complete_coverage(Config) ->
   try fiar_auth:credentials({bad_attribute}) of
@@ -1044,11 +1112,11 @@ complete_coverage(Config) ->
     _ -> ok
   end,
   Mid = proplists:get_value(match_id, Config),
-  Id1 = proplists:get_value(id1, Config),
-  Player2 = proplists:get_value(username2, Config),
-  Pass2 = proplists:get_value(pass2, Config),
+  Id1 = proplists:get_value(id, Config),
+  Player = proplists:get_value(username, Config),
+  Pass = proplists:get_value(pass, Config),
   Headers2 = #{<<"content-type">> => <<"application/json">>,
-              basic_auth => {Player2, Pass2}},
+              basic_auth => {Player, Pass}},
   {ok, Pid1} = shotgun:open("localhost", 8080),
   try
     shotgun:get( Pid1

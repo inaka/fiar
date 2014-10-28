@@ -1,3 +1,9 @@
+$( document ).ready(function() {
+    if (isCookie("auth")) {
+      setConnection();
+    };
+  });
+
 $('#register_btn').click(function(event) {
         event.preventDefault();
         var username = $("#register_username_txt").val();
@@ -29,20 +35,31 @@ $('#login_btn').click(function(event) {
   cvalue = btoa(username + ":" + pass);
   if (!checkCookie("auth", cvalue)) {
     setCookie(cvalue);
-    var es = new EventSource('/events');
-    es.onerror = function(e){
-      delete_cookie("auth");
-    }
-    es.onopen = function(e){
-      $('#modal_login').foundation('reveal', 'close');
-    }
-    es.onmessage = function(e) {
-      var msg = $.parseJSON(event.data);
-    }
+    setConnection();
   } else {
     $('#modal_login').foundation('reveal', 'close');
   };
 })
+
+function setConnection(){
+  var es = new EventSource('/events');
+
+  es.onerror = function(e){
+    delete_cookie("auth");
+    $('#login_pass_lbl')
+        .next()
+        .html('<small class="error">Username or Password incorrect.</small>');
+  }
+  es.onopen = function(e){
+    $('#modal_login').foundation('reveal', 'close');
+    cleanLoginForm();
+  }
+  es.onmessage = function(e) {
+    var msg = $.parseJSON(e.data);
+    uploadPlayersOnline(msg);
+  }
+  return es;
+}
 
 function setCookie(cvalue) {
   document.cookie = "auth=" + cvalue + ";";
@@ -68,6 +85,42 @@ function checkCookie(cname, cvalue) {
     }
 }
 
+function isCookie(cname) {
+    var result = getCookie(cname);
+    if (result != "") {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 function delete_cookie(cname) {
   document.cookie = cname + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 }
+
+function uploadPlayersOnline(msg) {
+  $("ul#players_online").html("");
+  Object.keys(msg).forEach(function (key) {
+    if (msg[key].current_matches.length == 0) {
+      $("ul#players_online").append( "<li><a href='#'>"
+                                     + msg[key].user.username
+                                     + "</a></li>"
+                                     );
+    } else {
+      $("ul#players_online").append( "<li class='busy'>"
+                                     + msg[key].user.username
+                                     + "</li>"
+                                     );
+    };
+  });
+}
+
+function cleanLoginForm() {
+  $("#login_username_txt").val("");
+  $("#login_pass_txt").val("");
+  $(".error").remove();
+}
+
+$('.close-reveal-modal').click(function(event) {
+  cleanLoginForm();
+})

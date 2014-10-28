@@ -94,12 +94,7 @@
       </div>
       <aside class="large-3 columns">
         <h5>Players online</h5>
-        <ul class="side-nav">
-          <li><a href="#">Hernan</a></li>
-          <li><a href="#">Brujo</a></li>
-          <li><a href="#">Aki</a></li>
-          <li><a class="busy" href="#">Fede</a></li>
-          <li><a class="busy" href="#">Juan</a></li>
+        <ul id="players_online" class="side-nav">
         </ul>
       </aside>   
     </div>
@@ -139,7 +134,7 @@
           <div class="large-12 columns">
             <label id="login_pass_lbl">Password
               <input id="login_pass_txt" 
-                     type="text"
+                     type="password"
                      placeholder="Password" />
             </label>
             <span></span>
@@ -147,7 +142,7 @@
         </div>
         <div class="row">
           <div class="large-12 columns">
-            <p>
+            <p class="right">
               <a id="login_btn"
                  role="button"
                  aria-label="submit form"
@@ -187,7 +182,7 @@
         </div>
         <div class="row">
           <div class="large-12 columns">
-            <p>
+            <p class="right">
               <a id ="register_btn"
                  role="button"
                  aria-label="submit form"

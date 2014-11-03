@@ -28,7 +28,8 @@ init(_InitArgs, _LastEventId, Req) ->
         process_register(fiar_user:get_id(User)),
         pg2:join(fiar_connected_users, self()),
         ConnectedUsers = get_connected_users(),
-        FirstEvent = [{data, jiffy:encode(ConnectedUsers)}],
+        FirstEvent = [ {data, jiffy:encode(ConnectedUsers)}
+                     , {name, <<"users_conected">>}],
         fiar:send_event(fiar_user, connected, [User]),
         {ok, Req, [FirstEvent], #{user => User}};
       {not_authenticated, _AuthHeader, Req1} ->

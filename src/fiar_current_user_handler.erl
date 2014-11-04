@@ -37,9 +37,12 @@ is_authorized(Req, State) ->
 
 handle_get(Req, State) ->
   try
-    User1 = maps:get(user, State),
-    UserJson = fiar_user:to_json(User1, public),
-    RespBody = jiffy:encode(UserJson),
+    User = maps:get(user, State),
+    User1 = fiar_user:to_json(User, public),
+    CurrentMatches = fiar:current_matches(User),
+    CurrentMatchesJson = fiar_match:matches_to_json(CurrentMatches),
+    Response = [{user, User1}, {current_matches, CurrentMatchesJson}],
+    RespBody = jiffy:encode({Response}),
     {RespBody, Req, State}
   catch
     _:Exception ->

@@ -1,6 +1,8 @@
 Broadcast = {
+  busy_players : [],
   setConnection : function(){
     var es = new EventSource('/events');
+
 
     es.onerror = function(e){
       delete_cookie("auth");
@@ -15,12 +17,15 @@ Broadcast = {
     es.addEventListener('users_conected', function(e) {
       Broadcast.msg = $.parseJSON(e.data);
       if (Broadcast.msg != "unregistered" && Broadcast.msg.length > 0) {
+        fillBusyList(Broadcast.msg);
         updatePlayers(Broadcast.msg);
       };
     }, false);
     es.addEventListener('user_conected', function(e) {
       Broadcast.msg = $.parseJSON(e.data);
-      if (Broadcast.current_user != Broadcast.msg.username) {
+      if (Broadcast.current_user.user.username != Broadcast.msg.username) {
+        console.log("user_connected");
+
         updatePlayers(Broadcast.msg);
       };
     }, false);
@@ -28,43 +33,102 @@ Broadcast = {
       Broadcast.msg = $.parseJSON(e.data);
     }, false);
     es.addEventListener('match_started', function(e) {
-      Broadcast.msg = $.parseJSON(e.data);
+      var match = $.parseJSON(e.data);
       console.log("match_started BR");
-      console.log(Broadcast.msg);
+      console.log(match);
+      addBusyPlayer(match.player1);      
+      addBusyPlayer(match.player2);      
+      setAsBusy(Broadcast.busy_players);
     }, false);
     es.addEventListener('match_ended', function(e) {
       Broadcast.msg = $.parseJSON(e.data);
       console.log("match_ended BR");
       console.log(Broadcast.msg);
     }, false);
-  },
-  setMe : function(data){
-    Broadcast.current_user = data.username;
+    getCurrentUser();
   }
+};
+
+function fillBusyList(players){
+  players.forEach(function (player) {
+    if (player.current_matches != undefined) {
+      if (player.current_matches.length > 0) {
+        addBusyPlayer(player.user.id); 
+      }
+    }
+  });
+}
+
+function addBusyPlayer(playerId){
+  if (!isBusy(playerId)) {
+    Broadcast.busy_players.push(playerId);
+  }
+  console.log("busy");
+  console.log(Broadcast.busy_players);
+};
+
+function isBusy(playerId){
+  var found = jQuery.inArray(playerId, Broadcast.busy_players);
+  if (found >= 0) {
+      return true;
+  } else {
+      return false;
+  };
+};
+
+function setCurrentUser(data){
+  Broadcast.current_user = data;
+};
+
+function setAsBusy(ids) {
+  ids.forEach(function (id){
+    console.log(id);
+    var username = $('#player_'+id+' a').text();
+    $('#player_'+id).html("<li id='player_"+id+"' class='player busy'>"+username+"</li>");
+  });
+};
+
+function getCurrentUser(){
+  var url = "/me";
+  var method = "GET";
+  var data = "";
+  sendRequest(url, method, data);
 };
 
 function updatePlayers(msg) {
   if (msg.length > 0) {
     $("ul#players_online").html("");
-    Object.keys(Broadcast.msg).forEach(function (key) {
-      updatePlayer(msg[key].user);
+    Object.keys(msg).forEach(function (key) {
+      if (msg[key].current_matches != undefined) {
+        if (msg[key].current_matches.length > 0) {
+          updatePlayer(msg[key].user, true);
+        } else {
+          updatePlayer(msg[key].user, isBusy(msg.id));
+        }
+      }
     });
   }else{
-    $("#"+msg.username).parent().remove();
-    updatePlayer(msg);
+    $("#player_"+msg.id).remove();
+    updatePlayer(msg, isBusy(msg.id));
   }
 };
 
-function updatePlayer(msg){
-  if (msg != "unregistered" && msg.current_matches == undefined) {
-    $("ul#players_online").append( "<li><a id='"+msg.username+"' class='player' href='#'>"
-                                   + msg.username
-                                   + "</a></li>"
+function updatePlayer(msg, match){
+  if (match) {
+    $("ul#players_online").append( "<li id='player_"
+                                 + msg.id
+                                 + "' class='player busy'>"
+                                 + msg.username
+                                 + "</li>"
                                  );
-  } else {
-    $("ul#players_online").append( "<li id='"+msg.username+"' class='busy'>"
-                                   + msg.username
-                                   + "</li>"
+  }else{
+    console.log(msg);
+    console.log(match);
+    $("ul#players_online").append( "<li id='player_"
+                                 + msg.id 
+                                 + "' class='player'><a href='#'>"
+                                 + msg.username
+                                 + "</a></li>"
                                  );
   };
 };
@@ -72,10 +136,6 @@ function updatePlayer(msg){
 $( document ).ready(function() {
   if (isCookie("auth")) {
     Broadcast.setConnection();
-    var url = "/me";
-    var method = "GET";
-    var data = "";
-    sendRequest(url, method, data);
   };
 });
 
@@ -83,7 +143,7 @@ $("body").on('click', '#end_match_btn', function () {
   MatchConnection.endMatch();
 });
 
-$("body").on('click', '.player', function () {
+$("body").on('click', '.player a', function () {
   var username = event.target.innerText;
   var url = "/matches";
   var method = "POST";
@@ -93,22 +153,25 @@ $("body").on('click', '.player', function () {
 
 MatchConnection = {
   endMatch : function(){
-    if (Mid != undefined) {
-      var url = "/matches/"+ Mid;
-      var method = "DELETE";
-      var data = "";
-      sendRequest(url, method, data);
+    console.log(Broadcast.current_user.current_matches);
+    if (Broadcast.current_user.current_matches != undefined) {
+      Broadcast.current_user.current_matches.forEach(function (match) {
+        var url = "/matches/"+match.id;
+        var method = "DELETE";
+        var data = "";
+        sendRequest(url, method, data);
+      });
     };
   },
   startMatchOk : function(data) {
     var es = new EventSource("/matches/" + data.id + "/events");
     es.addEventListener('turn', function(e) {
-      Broadcast.msg = $.parseJSON(e.data);
+      // Broadcast.msg = $.parseJSON(e.data);
       console.log("turn");
       console.log(Broadcast.msg);
     }, false);
     es.addEventListener('match_ended', function(e) {
-      Broadcast.msg = $.parseJSON(e.data);
+      // Broadcast.msg = $.parseJSON(e.data);
       console.log("match_ended");
       console.log(Broadcast.msg);
     }, false);
@@ -168,7 +231,7 @@ function sendRequest(url, method, data2) {
     } else if(url == "/matches" && method == "POST" && xhr.status == 200) {
       MatchConnection.startMatchOk(data);
     } else if(url == "/me" && method == "GET" && xhr.status == 200) {
-      Broadcast.setMe(data);
+      setCurrentUser(data);
     };
   }).fail(function(xhr, textStatus) {
     if(url == "/matches" && method == "POST" && xhr.status == 409) {

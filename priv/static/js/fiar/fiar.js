@@ -39,6 +39,7 @@ Broadcast = {
       updateBusyPlayer(match.player1);
       updateBusyPlayer(match.player2);
       setAsBusy(Broadcast.busy_players);
+      setFirstTurn(match.player2);
     }, false);
     es.addEventListener('match_ended', function(e) {
       var match = $.parseJSON(e.data);
@@ -48,10 +49,24 @@ Broadcast = {
       updateBusyPlayer(match.player1);
       updateBusyPlayer(match.player2);
       setAsFree([match.player1, match.player2]);
+      cleanTurnLbl();
     }, false);
     getCurrentUser();
   }
 };
+
+/*** Turn ***/
+function cleanTurnLbl(){
+  $("#turn_lbl").remove();
+}
+
+function setFirstTurn(playerId){
+  if (playerId == Broadcast.current_user.user.id) {
+    $("#board_title_lbl")
+      .next()
+      .append("<p id='turn_lbl'>Your turn.</p>");
+  };
+}
 
 MatchConnection = {
   endMatch : function(){

@@ -1,0 +1,12 @@
+.busy{
+  color: #a3a3a3
+}
+
+ul#board_ul li {
+  text-align: center;
+  border-right: solid 1px;
+}
+
+#choice_column li{
+  text-align: center;
+}

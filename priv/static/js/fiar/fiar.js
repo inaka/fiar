@@ -88,9 +88,8 @@ function cleanTurnLbl(){
 
 function setFirstTurn(playerId){
   if (playerId == Broadcast.current_user.user.id) {
-    $("#board_title_lbl")
-      .next()
-      .append("<p id='turn_lbl'>Your turn.</p>");
+    $("#board_ul").children().text("");
+    $("#board_notice").append("<p>Match started, please select a column and play!</p>");
   };
 }
 

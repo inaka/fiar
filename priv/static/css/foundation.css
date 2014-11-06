@@ -34,10 +34,6 @@ html, body {
   -moz-box-sizing: border-box;
   box-sizing: border-box; }
 
-.busy{
-  color: #a3a3a3
-}
-
 span.error, small.error {
   display: block;
   padding: 0.33333rem 0.5rem 0.5rem;

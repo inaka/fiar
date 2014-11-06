@@ -41,6 +41,6 @@ function cleanLoginForm() {
   $(".error").remove();
 };
 
-$('.close-reveal-modal').click(function(event) {
+$('#modal_login .close-reveal-modal').click(function(event) {
   cleanLoginForm();
 });

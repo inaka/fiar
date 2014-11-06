@@ -39,7 +39,9 @@ Broadcast = {
       updateBusyPlayer(match.player1);
       updateBusyPlayer(match.player2);
       setAsBusy(Broadcast.busy_players);
-      setFirstTurn(match.player2);
+      if (Broadcast.current_user.user.id == match.player2) {
+        openInvitationModal();
+      };
     }, false);
     es.addEventListener('match_ended', function(e) {
       var match = $.parseJSON(e.data);
@@ -54,6 +56,30 @@ Broadcast = {
     getCurrentUser();
   }
 };
+
+/**** Invitation ****/
+function openInvitationModal() {
+  $('#modal_invitation').foundation('reveal', 'open');
+}
+
+function closeInvitationModal() {
+  $('#modal_invitation').foundation('reveal', 'close');
+}
+
+$("body").on('click', '#accept_btn', function () {
+  MatchConnection.startMatchOk(Broadcast.current_user.current_matches[0]);
+  setFirstTurn(Broadcast.current_user.current_matches[Broadcast.current_user.current_matches.length-1].player2);  
+  closeInvitationModal();
+});
+
+$("body").on('click', '#decline_btn', function () {
+  MatchConnection.endMatch();
+  closeInvitationModal();
+});
+
+$("body").on('closed.fndtn.reveal', '#modal_invitation', function () {
+  MatchConnection.endMatch();
+});
 
 /*** Turn ***/
 function cleanTurnLbl(){
@@ -82,14 +108,14 @@ MatchConnection = {
   startMatchOk : function(data) {
     var es = new EventSource("/matches/" + data.id + "/events");
     es.addEventListener('turn', function(e) {
-      // Broadcast.msg = $.parseJSON(e.data);
-      console.log("turn");
-      console.log(Broadcast.msg);
+      MatchConnection.msg = $.parseJSON(e.data);
+      console.log("turn ME");
+      console.log(MatchConnection.msg);
     }, false);
     es.addEventListener('match_ended', function(e) {
-      // Broadcast.msg = $.parseJSON(e.data);
-      console.log("match_ended");
-      console.log(Broadcast.msg);
+      MatchConnection.match = $.parseJSON(e.data);
+      console.log("match_ended ME");
+      console.log(MatchConnection.match);
     }, false);
     
   }
@@ -106,26 +132,38 @@ $("body").on('click', '#end_match_btn', function () {
   MatchConnection.endMatch();
 });
 
-$("body").on('click', '.player a', function () {
-  var username = event.target.innerText;
-  var url = "/matches";
-  var method = "POST";
-  var data = JSON.stringify({'player2': username});
-  sendRequest(url, method, data);
+$("body").on('click', '.player a', function (event) {
+  if (Broadcast.current_user.user.username != event.target.innerText) {
+    var username = event.target.innerText;
+    var url = "/matches";
+    var method = "POST";
+    var data = JSON.stringify({'player2': username});
+    sendRequest(url, method, data);
+  };
 });
 
 /*** Current user ***/
+function getCurrentUser(){
+  var url = "/me";
+  var method = "GET";
+  var data = "";
+  sendRequest(url, method, data);
+};
+
 function setCurrentUser(data){
   Broadcast.current_user = data;
 };
 
 function updateCurrentUser(match){
-  if (Broadcast.current_user.current_matches == undefined ||
-      Broadcast.current_user.current_matches.length < 1) {
-    Broadcast.current_user.current_matches = [match];
-  }else{
-    delete Broadcast.current_user.current_matches;
-  }
+  if (Broadcast.current_user.user.id == match.player1 ||
+      Broadcast.current_user.user.id == match.player2) {
+    if (Broadcast.current_user.current_matches == undefined ||
+        Broadcast.current_user.current_matches.length < 1) {
+      Broadcast.current_user.current_matches = [match];
+    }else{
+      delete Broadcast.current_user.current_matches;
+    }
+  };
 }
 
 
@@ -177,13 +215,6 @@ function setAsFree(ids) {
                          + username
                          + "</a></li>");
   });
-};
-
-function getCurrentUser(){
-  var url = "/me";
-  var method = "GET";
-  var data = "";
-  sendRequest(url, method, data);
 };
 
 /*** Update list ***/

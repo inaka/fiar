@@ -1,12 +1,38 @@
-.busy{
+.busy {
   color: #a3a3a3
 }
 
 ul#board_ul li {
-  text-align: center;
   border-right: solid 1px;
 }
 
-#choice_column li{
+#content li {
   text-align: center;
+}
+
+ul#board_ul li.no-border {
+  border-right: none;
+}
+
+#play_btn {
+  margin-top: 20px;
+}
+
+#on_hold {
+  position:absolute;
+  top:0px;
+  left:0px;
+  width:100%;
+  height:100%;
+  background-color:#fff;
+  filter: alpha(opacity=50);
+  opacity: .7;
+  z-index: 1;
+  border: solid 2px;
+  text-align: center;
+}
+
+#on_hold h3 {
+  margin-top:300px;
+  color:#000;
 }

@@ -19,6 +19,7 @@ Broadcast = {
       if (Broadcast.msg != "unregistered" && Broadcast.msg.length > 0) {
         fillBusyList(Broadcast.msg);
         updatePlayers(Broadcast.msg);
+        enableBoard(Broadcast.current_user);
       };
     }, false);
     es.addEventListener('user_conected', function(e) {
@@ -39,6 +40,7 @@ Broadcast = {
       updateBusyPlayer(match.player1);
       updateBusyPlayer(match.player2);
       setAsBusy(Broadcast.busy_players);
+      enableBoard(Broadcast.current_user);
       if (Broadcast.current_user.user.id == match.player2) {
         openInvitationModal();
       };
@@ -51,7 +53,7 @@ Broadcast = {
       updateBusyPlayer(match.player1);
       updateBusyPlayer(match.player2);
       setAsFree([match.player1, match.player2]);
-      cleanTurnLbl();
+      setOnHold();
     }, false);
     getCurrentUser();
   }
@@ -66,34 +68,55 @@ function closeInvitationModal() {
   $('#modal_invitation').foundation('reveal', 'close');
 }
 
+function invitationAccepted(){
+  var lastMatchPos = Broadcast.current_user.current_matches.length - 1;
+  Match.setConnection(Broadcast.current_user.current_matches[lastMatchPos]);
+  setFirstTurn(Broadcast.current_user.current_matches[lastMatchPos].player2);  
+}
+
 $("body").on('click', '#accept_btn', function () {
-  MatchConnection.startMatchOk(Broadcast.current_user.current_matches[0]);
-  setFirstTurn(Broadcast.current_user.current_matches[Broadcast.current_user.current_matches.length-1].player2);  
+  invitationAccepted();
   closeInvitationModal();
 });
 
 $("body").on('click', '#decline_btn', function () {
-  MatchConnection.endMatch();
+  Match.endMatch();
   closeInvitationModal();
 });
 
-$("body").on('closed.fndtn.reveal', '#modal_invitation', function () {
-  MatchConnection.endMatch();
+$('#modal_invitation .close-reveal-modal').click(function(event) {
+  invitationAccepted();
+});
+
+$("body").on('click', '.reveal-modal-bg', function () {
+  invitationAccepted();
 });
 
 /*** Turn ***/
-function cleanTurnLbl(){
-  $("#turn_lbl").remove();
+function enableBoard(current_user){
+  if (isBusy(current_user.user.id)) {
+    $("#on_hold").hide();
+    $("#board_ul").children().text("");
+    $("#play_btn").removeClass("disabled");
+    $("#end_match_btn").removeClass("disabled");
+  };
+}
+
+function setOnHold(){
+  $("#end_match_btn").addClass("disabled");
+  $("#play_btn").addClass("disabled");
+  $("#board_notice").html("");
+  $("#on_hold").show();
 }
 
 function setFirstTurn(playerId){
   if (playerId == Broadcast.current_user.user.id) {
-    $("#board_ul").children().text("");
     $("#board_notice").append("<p>Match started, please select a column and play!</p>");
   };
 }
 
-MatchConnection = {
+/* match connection */
+Match = {
   endMatch : function(){
     if (Broadcast.current_user.current_matches != undefined) {
       Broadcast.current_user.current_matches.forEach(function (match) {
@@ -104,19 +127,19 @@ MatchConnection = {
       });
     };
   },
-  startMatchOk : function(data) {
+  setConnection : function(data) {
     var es = new EventSource("/matches/" + data.id + "/events");
+    console.log("start listen ME");
     es.addEventListener('turn', function(e) {
-      MatchConnection.msg = $.parseJSON(e.data);
+      Match.msg = $.parseJSON(e.data);
       console.log("turn ME");
-      console.log(MatchConnection.msg);
+      console.log(Match.msg);
     }, false);
     es.addEventListener('match_ended', function(e) {
-      MatchConnection.match = $.parseJSON(e.data);
+      Match.match = $.parseJSON(e.data);
       console.log("match_ended ME");
-      console.log(MatchConnection.match);
+      console.log(Match.match);
     }, false);
-    
   }
 }
 
@@ -128,7 +151,7 @@ $( document ).ready(function() {
 });
 
 $("body").on('click', '#end_match_btn', function () {
-  MatchConnection.endMatch();
+  Match.endMatch();
 });
 
 $("body").on('click', '.player a', function (event) {
@@ -164,7 +187,6 @@ function updateCurrentUser(match){
     }
   };
 }
-
 
 /*** Busy list ***/
 function fillBusyList(players){
@@ -263,7 +285,7 @@ function sendRequest(url, method, data2) {
     dataType:"json"
   }).done(function(data, textStatus, xhr) {
     if(url == "/matches" && method == "POST" && xhr.status == 200) {
-      MatchConnection.startMatchOk(data);
+      Match.setConnection(data);
     } else if(url == "/me" && method == "GET" && xhr.status == 200) {
       setCurrentUser(data);
     };

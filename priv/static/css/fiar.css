@@ -36,3 +36,17 @@ ul#board_ul li.no-border {
   margin-top:300px;
   color:#000;
 }
+
+li.col{
+  background-image: url("/priv/static/img/empty-arrow.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  height: 25px;
+}
+
+li.col.selected {
+  background-image: url("/priv/static/img/full-arrow.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  height: 25px;
+}

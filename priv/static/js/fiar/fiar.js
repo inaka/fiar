@@ -37,8 +37,8 @@ Broadcast = {
       console.log("match_started BR");
       console.log(match);
       updateCurrentUser(match);
-      updateBusyPlayer(match.player1);
-      updateBusyPlayer(match.player2);
+      updateBusyPlayer(Broadcast.current_user);
+      updateBusyPlayer(Broadcast.current_user);
       setAsBusy(Broadcast.busy_players);
       enableBoard(Broadcast.current_user);
       if (Broadcast.current_user.user.id == match.player2) {
@@ -50,8 +50,8 @@ Broadcast = {
       console.log("match_ended BR");
       console.log(match);
       updateCurrentUser(match);
-      updateBusyPlayer(match.player1);
-      updateBusyPlayer(match.player2);
+      updateBusyPlayer(Broadcast.current_user);
+      updateBusyPlayer(Broadcast.current_user);
       setAsFree([match.player1, match.player2]);
       setOnHold();
     }, false);
@@ -198,7 +198,9 @@ function fillBusyList(players){
 function updateBusyPlayer(player){
   playerId = player.user.id;
   if (player.current_matches == undefined || player.current_matches.length > 0) {
-    Broadcast.busy_players.push(playerId);
+    if (!isBusy(playerId)) {
+      Broadcast.busy_players.push(playerId);
+    };
   }else{
     var index = Broadcast.busy_players.indexOf(playerId);
     if (index != -1) {

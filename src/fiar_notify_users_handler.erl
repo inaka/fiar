@@ -41,8 +41,11 @@ init(_InitArgs, _LastEventId, Req) ->
   end.
 
 handle_notify({user_conected, User}, State) ->
-  UserJson = jiffy:encode(fiar_user:to_json(User, public)),
-  {send, [{data, UserJson}, {name, <<"user_conected">>}], State};
+  UserJson = fiar_user:to_json(User, public),
+  CurrentMatches = fiar:current_matches(User),
+  CurrentMatchesJson = fiar_match:matches_to_json(CurrentMatches),
+  Response = {[{user, UserJson}, {current_matches, CurrentMatchesJson}]},
+  {send, [{data, jiffy:encode(Response)}, {name, <<"user_conected">>}], State};
 handle_notify({user_disconnected, User}, State) ->
   UserJson = jiffy:encode(fiar_user:to_json(User, public)),
   {send, [{data, UserJson}, {name, <<"user_disconnected">>}], State};

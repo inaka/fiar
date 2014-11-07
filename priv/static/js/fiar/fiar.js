@@ -24,8 +24,8 @@ Broadcast = {
     }, false);
     es.addEventListener('user_conected', function(e) {
       Broadcast.msg = $.parseJSON(e.data);
-      if (Broadcast.current_user.user.username != Broadcast.msg.username) {
-        console.log("user_connected");
+      if (Broadcast.current_user.user.username != Broadcast.msg.user.username) {
+        updateBusyPlayer(Broadcast.msg);
         updatePlayers(Broadcast.msg);
       };
     }, false);
@@ -191,20 +191,21 @@ function updateCurrentUser(match){
 /*** Busy list ***/
 function fillBusyList(players){
   players.forEach(function (player) {
-    if (player.current_matches != undefined) {
-      if (player.current_matches.length > 0) {
-        updateBusyPlayer(player.user.id); 
-      }
-    }
+    updateBusyPlayer(player); 
   });
 }
 
-function updateBusyPlayer(playerId){
-  if (isBusy(playerId)) {
-    var index = Broadcast.busy_players.indexOf(playerId);
-    Broadcast.busy_players.splice(index, 1);
-  }else{  
+function updateBusyPlayer(player){
+  playerId = player.user.id;
+  if (player.current_matches == undefined || player.current_matches.length > 0) {
     Broadcast.busy_players.push(playerId);
+  }else{
+    var index = Broadcast.busy_players.indexOf(playerId);
+    if (index != -1) {
+      Broadcast.busy_players.splice(index, 1);
+    }else{
+      console.log("busy player not added to list");
+    };
   }
 };
 
@@ -240,6 +241,7 @@ function setAsFree(ids) {
 
 /*** Update list ***/
 function updatePlayers(msg) {
+  console.log(msg);
   if (msg.length > 0) {
     $("ul#players_online").html("");
     Object.keys(msg).forEach(function (key) {
@@ -252,8 +254,8 @@ function updatePlayers(msg) {
       }
     });
   }else{
-    $("#player_"+msg.id).remove();
-    updatePlayer(msg, isBusy(msg.id));
+    $("#player_"+msg.user.id).remove();
+    updatePlayer(msg.user, isBusy(msg.user.id));
   }
 };
 

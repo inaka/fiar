@@ -29,7 +29,7 @@ $('#login_btn').click(function(event) {
   cvalue = btoa(username + ":" + pass);
   if (!checkCookie("auth", cvalue)) {
     setCookie(cvalue);
-    Broadcast.setConnection();
+    Broadcast.connect();
   } else {
     $('#modal_login').foundation('reveal', 'close');
   };

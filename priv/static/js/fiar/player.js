@@ -27,10 +27,15 @@ Players = {
   updateCurrent :function(match, event) {
     var playerId = Players.current.user.id;
     if (playerId == match.player1 || playerId == match.player2) {
-      if(event == "start") 
-        Players.current.current_matches = [match];
-      else if(event == "end")
-        Players.current.current_matches = [];
+      switch(event) {
+        case "start":
+        case "update":
+          Players.current.current_matches = [match];
+          break;
+        case "end":
+          Players.current.current_matches = [];
+          break;
+      }
     }
   },
   isBusy : function(player) {

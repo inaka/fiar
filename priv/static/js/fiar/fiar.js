@@ -26,7 +26,7 @@ Fiar = {
       Players.init(users);
 
       Players.updateView();
-      Board.updateView();
+      Board.toggleView();
     };
   },
   userConnected : function(e) {
@@ -50,7 +50,7 @@ Fiar = {
     Players.updateStatus(match.player2, match);
 
     Players.updateView();
-    Board.updateView();
+    Board.toggleView();
 
     Match.showInvitation(Players.current.user.id, match);
   },
@@ -65,7 +65,7 @@ Fiar = {
     Players.updateStatus(match.player2, undefined);
 
     Players.updateView();
-    Board.updateView();
+    Board.toggleView();
   }
 };
 

@@ -2,12 +2,12 @@ Utils = {
   last : function(array) {
     return array[array.length - 1];
   },
-  sendRequest : function(url, method, data2, success) {
+  sendRequest : function(url, method, data, success) {
     success = success ? success : function() {};
     $.ajax({
       url:url,
       type:method,
-      data:data2,
+      data:data,
       contentType:"application/json",
       dataType:"json"
     })

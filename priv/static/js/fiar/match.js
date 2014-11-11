@@ -17,11 +17,15 @@ Match = {
   connect : function(data) {
     var es = new EventSource("/matches/" + data.id + "/events");
     Board.enable();
+    console.log("ready state");
     console.log("start listen ME");
     es.addEventListener('turn', function(e) {
-      Match.msg = $.parseJSON(e.data);
+      var match = $.parseJSON(e.data);
       console.log("turn ME");
-      console.log(Match.msg);
+      console.log(match);
+      Players.updateCurrent(match, "update");
+      Board.setTurn();
+      Board.updateView();
     }, false);
     es.addEventListener('match_ended', function(e) {
       Match.match = $.parseJSON(e.data);
@@ -45,5 +49,9 @@ Match = {
       Board.setFirstTurn(match.player2);
     }
     $('#modal_invitation').foundation('reveal', 'close');
+  },
+  getCurrent : function() {
+    if (Players.current.current_matches.length > 0) 
+      return Utils.last(Players.current.current_matches);
   }
 };

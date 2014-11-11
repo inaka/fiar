@@ -16,10 +16,9 @@ Board = {
       .html("<p>Match started, please select a column and play!</p>");
   },
   setTurn : function() {
-    console.log("entra");
-    $("#board_notice").fadeToggle( "slow", "linear", function(){
-      $(this).append("your turn.");
-    });
+    // $("#board_notice").fadeToggle( "slow", "linear", function(){
+    //   $(this).append("your turn.");
+    // });
   },
   toggleView : function() {
     if(Match.getCurrent()){
@@ -27,6 +26,26 @@ Board = {
       Board.updateView();
     } else {
       Board.disable();
+    }
+  },
+  updateViewWon : function(playerId1, playerId2, playerWon) {
+    var currentId = Players.current.user.id;
+    if (currentId == playerId1 || currentId == playerId2) {
+      $("#end_match_btn").addClass("disabled");
+      // $("#end_match_btn").unbind("click");
+      $("#play_btn").addClass("disabled");
+      // $("#play_btn").unbind("click");
+      $("#board_notice").html("Player " + playerWon + " won.");
+    };
+  },
+  updateViewDrawn : function(playerId1, playerId2) {
+    var currentId = Players.current.user.id;
+    if (currentId == playerId1 || currentId == playerId2) {
+      $("#end_match_btn").addClass("disabled");
+      // $("#end_match_btn").unbind("click");
+      $("#play_btn").addClass("disabled");
+      // $("#play_btn").unbind("click");
+      $("#board_notice").html("Match drawn.");
     }
   },
   updateView : function() {

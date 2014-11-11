@@ -33,8 +33,8 @@ play(Mid, Col, User) ->
         State = fiar_match:get_state(Match),
         {Reply, NewStatus, NewState} =
           case fiar_core:play(Col, State) of
-            {Result, St} -> {Result, on_course, St};
-            Result -> {Result, new_status(Result, State), State}
+            {next, St} -> {next, on_course, St};
+            {Result, St} -> {Result, new_status(Result, State), St}
           end,
         NewMatch0 = fiar_match:set_status(Match, NewStatus),
         NewMatch2 = fiar_match:set_state(NewMatch0, NewState),

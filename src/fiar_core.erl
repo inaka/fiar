@@ -22,20 +22,17 @@ play(Col, _) when Col < 1 orelse Col > 7 ->
   throw(invalid_column);
 play(Col, Match = #match{board = Board, next_chip = NextChip}) ->
   Column = element(Col, Board),
+  NewColumn = [NextChip|Column],
+  NewBoard = setelement(Col, Board, NewColumn),
+  NewMatch = Match#match{board = NewBoard,
+             next_chip = diff_chip(NextChip)},
   case Column of
     [_, _, _, _, _, _, _] -> throw(invalid_column);
-    [NextChip, NextChip, NextChip | _] -> won;
+    [NextChip, NextChip, NextChip | _] ->
+      {won, NewMatch};
     _ ->
-      NewColumn = [NextChip|Column],
-      NewBoard = setelement(Col, Board, NewColumn),
-      case analyze(Col, NewColumn, NextChip, NewBoard) of
-        next ->
-          NewMatch = Match#match{board = NewBoard,
-                     next_chip = diff_chip(NextChip)},
-          {next, NewMatch};
-        won -> won;
-        drawn -> drawn
-      end
+      Status = analyze(Col, NewColumn, NextChip, NewBoard),
+      {Status, NewMatch}
   end.
 
 -spec get_next_chip(match()) -> chip().

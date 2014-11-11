@@ -393,8 +393,8 @@ wins_vertically(Config) ->
     drop_chips([1, 2, 1, 2, 1, 2, 1], Mid, [Headers1, Headers2]),
   BodyDecode = jiffy:decode(RespBody, [return_maps]),
   State = maps:get(<<"state">>, BodyDecode),
-  [[2, 2, 2], [1, 1, 1], [], [], [], [], []] = maps:get(<<"board">>, State),
-  2 = maps:get(<<"next_chip">>, State),
+  [[2, 2, 2, 2], [1, 1, 1], [], [], [], [], []] = maps:get(<<"board">>, State),
+  1 = maps:get(<<"next_chip">>, State),
   <<"won_by_player2">> = maps:get(<<"status">>, BodyDecode),
   ok.
 
@@ -415,8 +415,8 @@ wins_horizontally(Config) ->
     drop_chips([2, 5, 3, 6, 4, 7, 1], Mid, [Headers1, Headers2]),
   BodyDecode = jiffy:decode(RespBody, [return_maps]),
   State = maps:get(<<"state">>, BodyDecode),
-  [[], [2], [2], [2], [1], [1], [1]] = maps:get(<<"board">>, State),
-  2 = maps:get(<<"next_chip">>, State),
+  [[2], [2], [2], [2], [1], [1], [1]] = maps:get(<<"board">>, State),
+  1 = maps:get(<<"next_chip">>, State),
   <<"won_by_player2">> = maps:get(<<"status">>, BodyDecode),
   ok.
 
@@ -436,9 +436,9 @@ wins_right_diagonally(Config) ->
     drop_chips([4, 4, 4, 4, 6, 3, 3, 3, 2, 2, 7, 1], Mid, [Headers1, Headers2]),
   BodyDecode = jiffy:decode(RespBody, [return_maps]),
   State = maps:get(<<"state">>, BodyDecode),
-  [[], [1, 2], [1, 2, 1], [1, 2, 1, 2], [], [2], [2]] =
+  [[1], [1, 2], [1, 2, 1], [1, 2, 1, 2], [], [2], [2]] =
     maps:get(<<"board">>, State),
-  1 = maps:get(<<"next_chip">>, State),
+  2 = maps:get(<<"next_chip">>, State),
   <<"won_by_player1">> = maps:get(<<"status">>, BodyDecode),
   ok.
 
@@ -458,9 +458,9 @@ wins_left_diagonally(Config) ->
     drop_chips([4, 4, 4, 4, 2, 5, 5, 5, 6, 6, 1, 7], Mid, [Headers1, Headers2]),
   BodyDecode = jiffy:decode(RespBody, [return_maps]),
   State = maps:get(<<"state">>, BodyDecode),
-  [[2], [2], [], [1, 2, 1, 2], [1, 2, 1], [1, 2], []] =
+  [[2], [2], [], [1, 2, 1, 2], [1, 2, 1], [1, 2], [1]] =
     maps:get(<<"board">>, State),
-  1 = maps:get(<<"next_chip">>, State),
+  2 = maps:get(<<"next_chip">>, State),
   <<"won_by_player1">> = maps:get(<<"status">>, BodyDecode),
   ok.
 

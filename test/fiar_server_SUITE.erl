@@ -766,7 +766,7 @@ get_connections(Config) ->
     [UserData] = jiffy:decode(maps:get(data, Event1), [return_maps]),
     true = is_map(maps:get(<<"user">>, UserData)),
     Event2 = shotgun:parse_event(EventBin2),
-    <<"user_conected">> = maps:get(event, Event2),
+    <<"user_connected">> = maps:get(event, Event2),
     ok
   catch
     _:Ex -> throw({error, Ex})
@@ -808,7 +808,7 @@ user_disconnected(Config) ->
     true = is_map(maps:get(<<"user">>, UserData)),
 
     Event2 = shotgun:parse_event(EventBin2),
-    <<"user_conected">> = maps:get(event, Event2),
+    <<"user_connected">> = maps:get(event, Event2),
     shotgun:close(Pid1),
 
     timer:sleep(500),
@@ -844,7 +844,7 @@ match_created_event(Config) ->
     Event1 = shotgun:parse_event(EventBin1),
     [_] = jiffy:decode(maps:get(data, Event1), [return_maps]),
     Event2 = shotgun:parse_event(EventBin2),
-    <<"user_conected">> = maps:get(event, Event2),
+    <<"user_connected">> = maps:get(event, Event2),
     % % Create match
     Body = jiffy:encode(#{player2 => Player2}),
     {ok, #{status_code := 200, body := Match}} =
@@ -880,7 +880,7 @@ match_ended_event(Config) ->
     Event1 = shotgun:parse_event(EventBin1),
     [_] = jiffy:decode(maps:get(data, Event1), [return_maps]),
     Event2 = shotgun:parse_event(EventBin2),
-    <<"user_conected">> = maps:get(event, Event2),
+    <<"user_connected">> = maps:get(event, Event2),
     % Terminate match
     ok = wins_vertically(Config),
     timer:sleep(500),

@@ -1,0 +1,80 @@
+ul#board_ul li {
+  border-right: solid 1px;
+}
+
+#content li {
+  text-align: center;
+}
+
+ul#board_ul li.no-border {
+  border-right: none;
+}
+
+#play_btn {
+  margin-top: 20px;
+}
+
+#on_hold {
+  position:absolute;
+  top:0px;
+  left:0px;
+  width:100%;
+  height:100%;
+  background-color:#fff;
+  filter: alpha(opacity=50);
+  opacity: .7;
+  z-index: 1;
+  border: solid 2px;
+  text-align: center;
+}
+
+#on_hold h3 {
+  margin-top:300px;
+  color:#000;
+}
+
+li.col{
+  background-image: url("/priv/static/img/empty-arrow.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  height: 25px;
+}
+
+li.col.selected {
+  background-image: url("/priv/static/img/full-arrow.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  height: 25px;
+}
+
+li.player {
+  cursor: pointer;
+  text-decoration: underline;
+  color: blue;
+}
+
+li.player.busy {
+  cursor: default;
+  color: #a3aa33;
+  text-decoration: none;
+}
+
+.show-board{
+  z-index: 2;
+  position: absolute;
+  width: 100%;
+  background-color: white;
+  border: solid;
+  margin: 10px;
+  padding: 10px;
+  left: -10px;
+}
+
+.won-notification{
+  z-index: 1;
+  background-color: rgb(255, 102, 102);
+  padding: 10px;
+  text-align: center;
+  color: #ffffff;
+  font-size: 20px;
+}

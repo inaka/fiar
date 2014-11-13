@@ -91,6 +91,7 @@ start_cowboy_listeners() ->
     {'_', [{"/matches", fiar_matches_handler, []},
            {"/matches/:match_id", fiar_single_match_handler, []},
            {"/users", fiar_users_handler, []},
+           {"/me", fiar_current_user_handler, []},
            {<<"/">>, cowboy_static, {file, "./priv/static/index.html"}},
            {"/priv/static/[...]", cowboy_static, {dir, "priv/static/"}},
            { "/matches/:match_id/events", lasse_handler, [fiar_notify_handler]},

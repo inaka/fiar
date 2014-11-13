@@ -393,8 +393,8 @@ wins_vertically(Config) ->
     drop_chips([1, 2, 1, 2, 1, 2, 1], Mid, [Headers1, Headers2]),
   BodyDecode = jiffy:decode(RespBody, [return_maps]),
   State = maps:get(<<"state">>, BodyDecode),
-  [[2, 2, 2], [1, 1, 1], [], [], [], [], []] = maps:get(<<"board">>, State),
-  2 = maps:get(<<"next_chip">>, State),
+  [[2, 2, 2, 2], [1, 1, 1], [], [], [], [], []] = maps:get(<<"board">>, State),
+  1 = maps:get(<<"next_chip">>, State),
   <<"won_by_player2">> = maps:get(<<"status">>, BodyDecode),
   ok.
 
@@ -415,8 +415,8 @@ wins_horizontally(Config) ->
     drop_chips([2, 5, 3, 6, 4, 7, 1], Mid, [Headers1, Headers2]),
   BodyDecode = jiffy:decode(RespBody, [return_maps]),
   State = maps:get(<<"state">>, BodyDecode),
-  [[], [2], [2], [2], [1], [1], [1]] = maps:get(<<"board">>, State),
-  2 = maps:get(<<"next_chip">>, State),
+  [[2], [2], [2], [2], [1], [1], [1]] = maps:get(<<"board">>, State),
+  1 = maps:get(<<"next_chip">>, State),
   <<"won_by_player2">> = maps:get(<<"status">>, BodyDecode),
   ok.
 
@@ -436,9 +436,9 @@ wins_right_diagonally(Config) ->
     drop_chips([4, 4, 4, 4, 6, 3, 3, 3, 2, 2, 7, 1], Mid, [Headers1, Headers2]),
   BodyDecode = jiffy:decode(RespBody, [return_maps]),
   State = maps:get(<<"state">>, BodyDecode),
-  [[], [1, 2], [1, 2, 1], [1, 2, 1, 2], [], [2], [2]] =
+  [[1], [1, 2], [1, 2, 1], [1, 2, 1, 2], [], [2], [2]] =
     maps:get(<<"board">>, State),
-  1 = maps:get(<<"next_chip">>, State),
+  2 = maps:get(<<"next_chip">>, State),
   <<"won_by_player1">> = maps:get(<<"status">>, BodyDecode),
   ok.
 
@@ -458,9 +458,9 @@ wins_left_diagonally(Config) ->
     drop_chips([4, 4, 4, 4, 2, 5, 5, 5, 6, 6, 1, 7], Mid, [Headers1, Headers2]),
   BodyDecode = jiffy:decode(RespBody, [return_maps]),
   State = maps:get(<<"state">>, BodyDecode),
-  [[2], [2], [], [1, 2, 1, 2], [1, 2, 1], [1, 2], []] =
+  [[2], [2], [], [1, 2, 1, 2], [1, 2, 1], [1, 2], [1]] =
     maps:get(<<"board">>, State),
-  1 = maps:get(<<"next_chip">>, State),
+  2 = maps:get(<<"next_chip">>, State),
   <<"won_by_player1">> = maps:get(<<"status">>, BodyDecode),
   ok.
 
@@ -766,7 +766,7 @@ get_connections(Config) ->
     [UserData] = jiffy:decode(maps:get(data, Event1), [return_maps]),
     true = is_map(maps:get(<<"user">>, UserData)),
     Event2 = shotgun:parse_event(EventBin2),
-    <<"user_conected">> = maps:get(event, Event2),
+    <<"user_connected">> = maps:get(event, Event2),
     ok
   catch
     _:Ex -> throw({error, Ex})
@@ -808,7 +808,7 @@ user_disconnected(Config) ->
     true = is_map(maps:get(<<"user">>, UserData)),
 
     Event2 = shotgun:parse_event(EventBin2),
-    <<"user_conected">> = maps:get(event, Event2),
+    <<"user_connected">> = maps:get(event, Event2),
     shotgun:close(Pid1),
 
     timer:sleep(500),
@@ -844,7 +844,7 @@ match_created_event(Config) ->
     Event1 = shotgun:parse_event(EventBin1),
     [_] = jiffy:decode(maps:get(data, Event1), [return_maps]),
     Event2 = shotgun:parse_event(EventBin2),
-    <<"user_conected">> = maps:get(event, Event2),
+    <<"user_connected">> = maps:get(event, Event2),
     % % Create match
     Body = jiffy:encode(#{player2 => Player2}),
     {ok, #{status_code := 200, body := Match}} =
@@ -880,7 +880,7 @@ match_ended_event(Config) ->
     Event1 = shotgun:parse_event(EventBin1),
     [_] = jiffy:decode(maps:get(data, Event1), [return_maps]),
     Event2 = shotgun:parse_event(EventBin2),
-    <<"user_conected">> = maps:get(event, Event2),
+    <<"user_connected">> = maps:get(event, Event2),
     % Terminate match
     ok = wins_vertically(Config),
     timer:sleep(500),

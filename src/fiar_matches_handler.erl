@@ -35,9 +35,9 @@ content_types_provided(Req, State) ->
 is_authorized(Req, State) ->
   case fiar_auth:check_auth(Req) of
     {authenticated, User, _Req1} ->
-        {true, Req, #{user => User}};
+      {true, Req, #{user => User}};
     {not_authenticated, AuthHeader, Req1} ->
-        {{false, AuthHeader}, Req1, State}
+      {{false, AuthHeader}, Req1, State}
   end.
 
 handle_get(Req, State) ->

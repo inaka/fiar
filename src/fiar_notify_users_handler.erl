@@ -28,7 +28,8 @@ init(_InitArgs, _LastEventId, Req) ->
         process_register(fiar_user:get_id(User)),
         pg2:join(fiar_connected_users, self()),
         ConnectedUsers = get_connected_users(),
-        FirstEvent = [{data, jiffy:encode(ConnectedUsers)}],
+        FirstEvent = [ {data, jiffy:encode(ConnectedUsers)}
+                     , {name, <<"users_connected">>}],
         fiar:send_event(fiar_user, connected, [User]),
         {ok, Req, [FirstEvent], #{user => User}};
       {not_authenticated, _AuthHeader, Req1} ->
@@ -40,8 +41,11 @@ init(_InitArgs, _LastEventId, Req) ->
   end.
 
 handle_notify({user_conected, User}, State) ->
-  UserJson = jiffy:encode(fiar_user:to_json(User, public)),
-  {send, [{data, UserJson}, {name, <<"user_conected">>}], State};
+  UserJson = fiar_user:to_json(User, public),
+  CurrentMatches = fiar:current_matches(User),
+  CurrentMatchesJson = fiar_match:matches_to_json(CurrentMatches),
+  Response = {[{user, UserJson}, {current_matches, CurrentMatchesJson}]},
+  {send, [{data, jiffy:encode(Response)}, {name, <<"user_connected">>}], State};
 handle_notify({user_disconnected, User}, State) ->
   UserJson = jiffy:encode(fiar_user:to_json(User, public)),
   {send, [{data, UserJson}, {name, <<"user_disconnected">>}], State};

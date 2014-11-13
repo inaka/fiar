@@ -12,9 +12,14 @@
 
 notify(EventName, MatchId, UserId, Match) ->
   ProcessName = process_name(MatchId, UserId),
+  lager:info("Event: ~p sent to ~p.", [EventName, ProcessName]),
   try lasse_handler:notify(ProcessName, {EventName, Match})
   catch
-    _:badarg -> ok %% the destination process doesn't exist
+    _:badarg ->
+      lager:warning(
+        "Could not deliver notification:~nStack: ~p",
+        [erlang:get_stacktrace()]),
+      ok %% the destination process doesn't exist
   end.
 
 init(_InitArgs, _LastEventId, Req) ->

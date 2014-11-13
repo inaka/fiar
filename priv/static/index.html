@@ -1,0 +1,276 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Four in a Row</title>
+    <link rel="stylesheet" href="priv/static/css/foundation.css" />
+    <link rel="stylesheet" href="priv/static/css/fiar.css" />
+    <script src="priv/static/js/vendor/modernizr.js"></script>
+  </head>
+  <body>
+
+    <div class="row">
+      <div class="large-8 columns">
+        <h1>FiaR <small>Four in a Row - A game to learn Erlang</small></h1>
+      </div>
+      <div class="large-4 columns">
+        <div class="nav-bar right">
+          <ul class="button-group">
+            <li>
+              <a id="login_modal_btn" href="#"
+                  data-reveal-id="modal_login"
+                  class="button">
+                Login
+              </a>
+            </li>
+            <li>
+              <a id="register_modal_btn" href="#" 
+                  data-reveal-id="modal_register"
+                  class="button">
+                Register
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <hr/>
+    </div>
+    <div class="row">
+      <div id="content" class="large-9 columns" role="content">
+        <div id="on_hold"><h3>No matches started.</h3></div>
+        <div class="row">
+          <div class="large-12 columns" role="content">
+            <h3 id="board_title_lbl">Board</h3>
+          </div>
+        </div>
+        <div class="row">
+          <div id="board_notice" class="large-12 columns" role="content">
+          </div>
+        </div>
+        <div class="row">
+          <div id="columns" class="large-12 columns" role="content">
+            <ul class="small-block-grid-7">
+              <li id="col_1" data-id="1" class="col"><a href="#"></a></li>
+              <li id="col_2" data-id="2" class="col"><a href="#"></a></li>
+              <li id="col_3" data-id="3" class="col"><a href="#"></a></li>
+              <li id="col_4" data-id="4" class="col"><a href="#"></a></li>
+              <li id="col_5" data-id="5" class="col"><a href="#"></a></li>
+              <li id="col_6" data-id="6" class="col"><a href="#"></a></li>
+              <li id="col_7" data-id="7" class="col"><a href="#"></a></li>
+            </li>
+          </div>
+        </div>
+        <div class="row">
+          <div id="board_div" class="large-12 columns" role="content">
+            <ul id="board_ul" class="small-block-grid-7">
+              <li id="7_1">o</li>
+              <li id="7_2">o</li>
+              <li id="7_3">o</li>
+              <li id="7_4">o</li>
+              <li id="7_5">o</li>
+              <li id="7_6">o</li>
+              <li id="7_7" class="no-border">o</li>
+              <li id="6_1">x</li>
+              <li id="6_2">x</li>
+              <li id="6_3">x</li>
+              <li id="6_4">x</li>
+              <li id="6_5">x</li>
+              <li id="6_6">x</li>
+              <li id="6_7" class="no-border">x</li>
+              <li id="5_1">x</li>
+              <li id="5_2">x</li>
+              <li id="5_3">x</li>
+              <li id="5_4">x</li>
+              <li id="5_5">x</li>
+              <li id="5_6">x</li>
+              <li id="5_7" class="no-border">x</li>
+              <li id="4_1">x</li>
+              <li id="4_2">x</li>
+              <li id="4_3">x</li>
+              <li id="4_4">x</li>
+              <li id="4_5">x</li>
+              <li id="4_6">x</li>
+              <li id="4_7" class="no-border">x</li>
+              <li id="3_1">x</li>
+              <li id="3_2">x</li>
+              <li id="3_3">x</li>
+              <li id="3_4">x</li>
+              <li id="3_5">x</li>
+              <li id="3_6">x</li>
+              <li id="3_7" class="no-border">x</li>
+              <li id="2_1">x</li>
+              <li id="2_2">x</li>
+              <li id="2_3">x</li>
+              <li id="2_4">x</li>
+              <li id="2_5">x</li>
+              <li id="2_6">x</li>
+              <li id="2_7" class="no-border">x</li>
+              <li id="1_1">x</li>
+              <li id="1_2">x</li>
+              <li id="1_3">x</li>
+              <li id="1_4">x</li>
+              <li id="1_5">x</li>
+              <li id="1_6">x</li>
+              <li id="1_7" class="no-border">x</li>
+            </ul>
+            <a id="play_btn" class="button disabled radius expand" href="#">Play</a>
+            <a id="end_match_btn" class="button disabled right" href="#">
+              Finish the game
+            </a>
+          </div>
+          <div id="board_div" class="large-12 columns" role="content">
+            <h3>How to play</h3>
+            <p>Connect Four is a two-player connection game in which the players first choose a color and then take turns dropping colored discs from the top into a seven-column, seven-row vertically suspended grid. The pieces fall straight down, occupying the next available space within the column. The object of the game is to connect four of one's own discs of the same color next to each other vertically, horizontally, or diagonally before your opponent.</p>
+            <p><a href="http://en.wikipedia.org/wiki/Connect_Four">- Wiki</a></p>
+          </div>
+        </div>
+      </div>
+      <aside class="large-3 columns">
+        <h5>Players online</h5>
+        <ul id="players_online" class="side-nav">
+        </ul>
+      </aside>   
+    </div>
+
+    <footer class="row">
+      <div class="large-12 columns">
+        <hr/>
+        <div class="row">
+          <div class="large-6 columns">
+            <p>© Copyright no one at all. Go to town.</p>
+          </div>
+          <div class="large-6 columns">
+            <ul class="inline-list right">
+              <li><a href="#">Inaka</a></li>
+              <li><a href="#">GitHub/inaka</a></li>
+              <li><a href="#">Fiar - Wiki</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <div id="modal_invitation" class="reveal-modal tiny" data-reveal>
+      <h2>You were invited to a game.</h2>
+      <div class="row">
+        <div class="large-6 columns">
+          <a id="decline_btn"
+             role="button"
+             href="#"
+             class="button">
+            Decline
+          </a>
+        </div>
+        <div class="large-6 columns">
+          <a id="accept_btn"
+             role="button"
+             href="#"
+             class="button">
+            Play
+          </a>
+        </div>
+      </div>
+      <a class="close-reveal-modal">&#215;</a>
+    </div>
+
+    <div id="modal_login" class="reveal-modal tiny" data-reveal>
+      <h2>Login.</h2>
+      <form id="loginForm" name="login" action="/events" method="post">
+        <div class="row">
+          <div class="large-12 columns">
+            <label id="login_username_lbl">Username
+              <input id="login_username_txt"
+                     type="text"
+                     placeholder="Username" />
+            </label>
+            <span></span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="large-12 columns">
+            <label id="login_pass_lbl">Password
+              <input id="login_pass_txt" 
+                     type="password"
+                     placeholder="Password" />
+            </label>
+            <span></span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="large-12 columns">
+            <p class="right">
+              <a id="login_btn"
+                 role="button"
+                 aria-label="submit form"
+                 href="#"
+                 class="button">
+                Submit
+              </a>
+            </p>
+          </div>
+        </div>
+      </form>
+      <a class="close-reveal-modal">&#215;</a>
+    </div>
+
+    <div id="modal_register" class="reveal-modal tiny" data-reveal>
+      <h2>Register.</h2>
+      <form id="regForm" name="register" action="/users" method="post">
+        <div class="row">
+          <div class="large-8 columns">
+            <div id="log"></div>
+            <label id="register_username_lbl">Username
+              <input id="register_username_txt"
+                     type="text"
+                     placeholder="Username" />
+            </label>
+            <span></span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="large-8 columns">
+            <label id="register_pass_lbl">Password
+              <input id="register_pass_txt"
+                     type="password"
+                     placeholder="Password" />
+            </label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="large-12 columns">
+            <p class="right">
+              <a id ="register_btn"
+                 role="button"
+                 aria-label="submit form"
+                 href="#"
+                 class="button">
+                Submit
+              </a>
+            </p>
+          </div>
+        </div>
+      </form>
+      <a class="close-reveal-modal">&#215;</a>
+    </div>
+
+    <div id="modal_success" class="reveal-modal tiny" data-reveal>
+      <h3>Done</h3>
+      <p>Your user has been created successfully!</p>
+      <a class="close-reveal-modal">&#215;</a>
+    </div>
+
+    <script src="priv/static/js/vendor/jquery.js"></script>
+    <script src="priv/static/js/foundation.min.js"></script>
+    <script src="priv/static/js/fiar/cookies.js"></script>
+    <script src="priv/static/js/fiar/modal_forms.js"></script>
+    <script src="priv/static/js/fiar/board.js"></script>
+    <script src="priv/static/js/fiar/player.js"></script>
+    <script src="priv/static/js/fiar/match.js"></script>
+    <script src="priv/static/js/fiar/utils.js"></script>
+    <script src="priv/static/js/fiar/fiar.js"></script>
+    <script>
+      $(document).foundation();
+    </script>
+  </body>
+</html>

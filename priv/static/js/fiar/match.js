@@ -24,7 +24,11 @@ Match = {
       console.log("turn ME");
       console.log(match);
       Players.updateCurrent(match, "update");
-      Board.setTurn();
+      if (match.state.next_chip == 1) {
+        Board.setTurn(match.player1);
+      } else {
+        Board.setTurn(match.player2);
+      };
       Board.updateView();
     }, false);
     es.addEventListener('match_ended', function(e) {

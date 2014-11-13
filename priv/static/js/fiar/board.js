@@ -16,11 +16,11 @@ Board = {
     $("#board_notice")
       .html("<p>Match started, please select a column and play!</p>");
   },
-  setTurn : function(playerId) {
+  setTurn : function(playerTurnId) {
     $("#board_notice").html("");
-    $("#board_notice").fadeToggle("slow", "linear", function(){
-      $("#board_notice").html("<p>Your turn.</p>");
-    });
+    if (Players.current.user.id == playerTurnId){
+      $("#board_notice").append("<p>your turn.</p>").show("slow");
+    }
   },
   toggleView : function() {
     if(Match.getCurrent()){
@@ -42,9 +42,7 @@ Board = {
     var currentId = Players.current.user.id;
     if (currentId == playerId1 || currentId == playerId2) {
       $("#end_match_btn").addClass("disabled");
-      // $("#end_match_btn").unbind("click");
       $("#play_btn").addClass("disabled");
-      // $("#play_btn").unbind("click");
       $("#board_notice").html("Match drawn.");
     }
   },
@@ -71,6 +69,7 @@ Board = {
     var success = Board._postPlay;
     var fail = Board._invalidPlay;
     Utils.sendRequest(url, method, data, success, fail);
+    $("#board_notice").html("");
   },
   _postPlay : function(match) {
     Players.updateCurrent(match, "update");

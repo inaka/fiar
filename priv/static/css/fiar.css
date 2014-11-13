@@ -69,3 +69,12 @@ li.player.busy {
   padding: 10px;
   left: -10px;
 }
+
+.won-notification{
+  z-index: 1;
+  background-color: rgb(255, 102, 102);
+  padding: 10px;
+  text-align: center;
+  color: #ffffff;
+  font-size: 20px;
+}

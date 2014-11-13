@@ -18,9 +18,12 @@ Board = {
   },
   setTurn : function(playerTurnId) {
     $("#board_notice").html("");
-    if (Players.current.user.id == playerTurnId){
-      $("#board_notice").append("<p>your turn.</p>").show("slow");
-    }
+    if (!Board.updateViewFinished(Match.getCurrent())) {
+      currentPlayer = Players.current;
+      if (currentPlayer.user.id == playerTurnId){
+        $("#board_notice").append("<p>your turn.</p>").show("slow");
+      }
+    };
   },
   toggleView : function() {
     if(Match.getCurrent()){
@@ -30,12 +33,27 @@ Board = {
       Board.disable();
     }
   },
+  updateViewFinished : function(match) {
+    if (match.status == "won_by_player2") {
+      Board.updateViewWon(match.player1, match.player2, 2);
+      return true;
+    }else if(match.status == "won_by_player1"){
+      Board.updateViewWon(match.player1, match.player2, 1);
+      return true;
+    }else if(match.status == "drawn"){
+      Board.updateViewDrawn(match.player1, match.player2);
+      return true;
+    }else{
+      return false;
+    };
+  },
   updateViewWon : function(playerId1, playerId2, playerWon) {
     var currentId = Players.current.user.id;
     if (currentId == playerId1 || currentId == playerId2) {
       Board.disable();
       $("#board_ul").addClass("show-board");
-      $("#board_notice").html("Player " + playerWon + " won.");
+      $("#board_notice").addClass('won-notification')
+                        .text("Player " + playerWon + " won.");
     };
   },
   updateViewDrawn : function(playerId1, playerId2) {

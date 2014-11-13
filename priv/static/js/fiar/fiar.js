@@ -64,15 +64,10 @@ Fiar = {
     Players.updateStatus(match.player1, undefined); 
     Players.updateStatus(match.player2, undefined);
 
-    if (match.status == "won_by_player2") {
-      Board.updateViewWon(match.player1, match.player2, 2);
-    }else if(match.status == "won_by_player1"){
-      Board.updateViewWon(match.player1, match.player2, 1);
-    }else if(match.status == "drawn"){
-      Board.updateViewDrawn(match.player1, match.player2);
-    }else{
+    if(!Board.updateViewFinished(match)){
       Board.toggleView();
-    };
+    }
+    
     Players.updateView();
   }
 };

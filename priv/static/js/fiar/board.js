@@ -2,6 +2,7 @@ Board = {
   enable : function() {
     $("#on_hold").hide();
     Board._clean();
+    $("#board_ul").removeClass("show-board");
     $("#play_btn").removeClass("disabled");
     $("#end_match_btn").removeClass("disabled");
   },
@@ -15,10 +16,11 @@ Board = {
     $("#board_notice")
       .html("<p>Match started, please select a column and play!</p>");
   },
-  setTurn : function() {
-    // $("#board_notice").fadeToggle( "slow", "linear", function(){
-    //   $(this).append("your turn.");
-    // });
+  setTurn : function(playerId) {
+    $("#board_notice").html("");
+    $("#board_notice").fadeToggle("slow", "linear", function(){
+      $("#board_notice").html("<p>Your turn.</p>");
+    });
   },
   toggleView : function() {
     if(Match.getCurrent()){
@@ -31,10 +33,8 @@ Board = {
   updateViewWon : function(playerId1, playerId2, playerWon) {
     var currentId = Players.current.user.id;
     if (currentId == playerId1 || currentId == playerId2) {
-      $("#end_match_btn").addClass("disabled");
-      // $("#end_match_btn").unbind("click");
-      $("#play_btn").addClass("disabled");
-      // $("#play_btn").unbind("click");
+      Board.disable();
+      $("#board_ul").addClass("show-board");
       $("#board_notice").html("Player " + playerWon + " won.");
     };
   },

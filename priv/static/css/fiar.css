@@ -58,3 +58,14 @@ li.player.busy {
   color: #a3aa33;
   text-decoration: none;
 }
+
+.show-board{
+  z-index: 2;
+  position: absolute;
+  width: 100%;
+  background-color: white;
+  border: solid;
+  margin: 10px;
+  padding: 10px;
+  left: -10px;
+}

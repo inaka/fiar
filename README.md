@@ -103,6 +103,18 @@ Every module has its your own test file created with [Common Test][common_test] 
 make devtests
 ```
 
+## Dependencies
+
+- [Cowboy][cowboy]
+- [Jiffy][jiffy]
+- [Sumo_DB][sumo_db]
+- [Synk][sync]
+- [Lager][lager]
+- [Lasse][lasse]
+- [Eperl][eperl]
+- [Katana][katana]
+- [Shotgun][shotgun]
+
 ## Documentation
 
 - erlang.org  http://www.erlang.org/doc.html
@@ -110,6 +122,15 @@ make devtests
 - Api  http://erldocs.com/
 
 
+  [cowboy]: https://github.com/extend/cowboy
+  [jiffy]: https://github.com/davisp/jiffy
+  [sumo_db]: https://github.com/inaka/sumo_db
+  [sync]: https://github.com/rustyio/sync
+  [lager]: https://github.com/basho/lager
+  [lasse]: https://github.com/inaka/lasse
+  [eperl]: https://github.com/massemanet/eper
+  [katana]: https://github.com/inaka/erlang-katana
+  [shotgun]: https://github.com/inaka/shotgun
   [modules]: http://learnyousomeerlang.com/modules#what-are-modules
   [lists]: http://learnyousomeerlang.com/starting-out-for-real#lists
   [pattern_matching]: http://learnyousomeerlang.com/syntax-in-functions#pattern-matching

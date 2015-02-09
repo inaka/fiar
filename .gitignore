@@ -7,3 +7,5 @@ ebin
 erl_crash.dump
 .erlang.mk.packages.v2
 log*/
+_rel/
+relx

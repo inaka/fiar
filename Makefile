@@ -1,7 +1,9 @@
 PROJECT = fiar
 
-DEPS = sumo_db lager eper sync cowboy lasse jiffy shotgun katana
+DEPS = sumo_db lager eper sync cowlib ranch cowboy lasse jiffy shotgun katana
 
+dep_cowlib = git https://github.com/ninenines/cowlib.git 1.0.0
+dep_ranch = git https://github.com/ninenines/ranch.git 1.0.0
 dep_cowboy = git https://github.com/extend/cowboy.git 1.0.0
 dep_jiffy = git https://github.com/davisp/jiffy.git 0.11.3
 dep_sumo_db = git https://github.com/inaka/sumo_db.git 0.1.2

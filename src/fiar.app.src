@@ -3,7 +3,7 @@
   {description,
    "For in a Row - A game to learn Erlang"},
   {vsn, "0.1"},
-  {applications, [kernel, stdlib, cowboy, lager, emysql, sumo_db]},
+  {applications, [kernel, stdlib, katana, cowboy, lager, emysql, sumo_db]},
   {modules, []},
   {mod, {fiar, []}},
   {registered, []}

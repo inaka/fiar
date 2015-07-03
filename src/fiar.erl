@@ -99,6 +99,7 @@ start_cowboy_listeners() ->
           ]
     }
   ]),
-  cowboy:start_http(fiar_http_listener, 100, [{port, 8080}],
+  {ok, Port} = application:get_env(fiar, http_port),
+  cowboy:start_http(fiar_http_listener, 100, [{port, Port}],
     [{env, [{dispatch, Dispatch}]}]
   ).

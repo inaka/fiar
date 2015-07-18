@@ -36,7 +36,7 @@ stop() -> application:stop(fiar).
 -spec start(atom(), any()) -> {ok, pid()} | {error, any()}.
 start(normal, _Args) ->
   {ok, Pid} = fiar_sup:start_link(),
-  start_cowboy_listeners(),
+  {ok, _ } = start_cowboy_listeners(),
   fiar_notify_users_handler:setup(),
   {ok, Pid}.
 

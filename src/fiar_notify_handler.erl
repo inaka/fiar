@@ -33,19 +33,19 @@ init(_InitArgs, _LastEventId, Req) ->
         process_register(MatchId, UserId),
         {ok, Req2, #{user => User}};
       {not_authenticated, _AuthHeader, Req1} ->
-        {shutdown, 401, [], [], Req1, #{}}
+        {shutdown, 401, [], [], Req1}
     end
   catch
-    _:notfound -> 
-      {shutdown, 404, [], [], Req, #{}}
+    _:notfound ->
+      {shutdown, 404, [], [], Req}
   end.
 
 handle_notify({match_updated, Match}, State) ->
   MatchJson = jiffy:encode(fiar_match:to_json(Match)),
-  {send, [{data, MatchJson}, {name, <<"turn">>}], State};
+  {send, [{data, <<MatchJson>>}, {name, <<"turn">>}], State};
 handle_notify({match_deleted, Match}, State) ->
   MatchJson = jiffy:encode(fiar_match:to_json(Match)),
-  {send, [{data, MatchJson}, {name, <<"match_ended">>}], State}.
+  {send, [{data, <<MatchJson>>}, {name, <<"match_ended">>}], State}.
 
 handle_info(stop, State) ->
   {stop, State};

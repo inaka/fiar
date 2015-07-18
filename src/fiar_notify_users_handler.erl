@@ -25,19 +25,19 @@ init(_InitArgs, _LastEventId, Req) ->
   try
     case fiar_auth:check_auth(Req) of
       {authenticated, User, Req1} ->
-        process_register(fiar_user:get_id(User)),
-        pg2:join(fiar_connected_users, self()),
+        process_register(fiar_user:get_id([User])),
+        ok = pg2:join(fiar_connected_users, self()),
         ConnectedUsers = get_connected_users(),
         FirstEvent = [ {data, jiffy:encode(ConnectedUsers)}
                      , {name, <<"users_connected">>}],
         fiar:send_event(fiar_user, connected, [User]),
         {ok, Req, [FirstEvent], #{user => User}};
       {not_authenticated, _AuthHeader, Req1} ->
-        {shutdown, 401, [], [], Req1, #{}}
+        {shutdown, 401, [], [], Req1}
     end
   catch
-    _:notfound -> 
-      {shutdown, 404, [], [], Req, #{}}
+    _:notfound ->
+      {shutdown, 404, [], [], Req}
   end.
 
 handle_notify({user_conected, User}, State) ->

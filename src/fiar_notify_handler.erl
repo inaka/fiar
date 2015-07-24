@@ -60,13 +60,13 @@ terminate(_Reason, _Req, _State) ->
 
 process_register(MatchId, UserId) ->
   Process = process_name(MatchId, UserId),
-  case whereis(Process) of
-      undefined -> ok;
-      _ ->
+  try erlang:register(Process, self())
+  catch
+    _:badarg ->
       Process ! stop,
-      erlang:unregister(Process)
-  end,
-  erlang:register(Process, self()).
+      erlang:unregister(Process),
+      process_register(MatchId, UserId)
+  end.
 
 process_name(MatchId, UserId) ->
   list_to_atom(  "fiar_player_"

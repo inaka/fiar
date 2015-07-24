@@ -4,18 +4,20 @@
         , datetime_to_json/1
         ]).
 
+-type date() ::
+        {
+          {integer(), integer(), integer()},
+          {integer(), integer(), integer()}
+        }.
 -type datetime() ::
         {
           datetime,
-          {
-            {integer(), integer(), integer()},
-            {integer(), integer(), integer()}
-          }
+          date()
         }.
--export_type([datetime/0]).
+-export_type([datetime/0, date/0]).
 
 %% @doc Converts a datetime record into a binary representation of its data.
--spec datetime_to_json(datetime()) -> binary().
+-spec datetime_to_json(date()) -> binary().
 datetime_to_json({{Yi, Mi, Di}, {Hi, Ni, Si}}) ->
   Y = integer_to_list(Yi),
   M = integer_to_list(Mi),

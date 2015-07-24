@@ -10,6 +10,12 @@
   , get_id/1
   , to_json/2
   ]).
+
+-type pass() :: binary().
+-opaque user() :: proplists:proplist().
+-type username() :: binary().
+
+-export_type([pass/0, user/0, username/0]).
 %%% Behaviour callbacks.
 -export([sumo_schema/0, sumo_wakeup/1, sumo_sleep/1]).
 
@@ -60,8 +66,10 @@ new(Username, Pass) ->
   , {created_at,  Now}
   , {updated_at,  Now}].
 
+-spec get_id(user()) -> integer().
 get_id(User) -> proplists:get_value(id, User).
 
+-spec to_json(user(), private | public) -> {[{atom(), any()}]}.
 to_json(User, private) ->
   { [to_json_attr(K, V) || {K, V} <- User] };
 to_json(User, public) ->

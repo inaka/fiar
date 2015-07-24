@@ -76,13 +76,13 @@ terminate(_Reason, _Req, _State) ->
 %% @private
 process_register(UserId) ->
   Process = process_name(UserId),
-  case whereis(Process) of
-      undefined -> ok;
-      _ ->
-        Process ! stop,
-        erlang:unregister(Process)
-  end,
-  erlang:register(Process, self()).
+  try erlang:register(Process, self())
+  catch
+    _:badarg ->
+      Process ! stop,
+      erlang:unregister(Process),
+      process_register(UserId)
+  end.
 
 process_name(UserId) ->
   list_to_atom("fiar_user_" ++ integer_to_list(UserId)).

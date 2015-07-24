@@ -13,7 +13,7 @@ dep_lasse = git https://github.com/inaka/lasse.git 1.0.1
 dep_eper = git https://github.com/massemanet/eper.git 35636bc4de07bc803ea4fc9731fab005d0378c2b
 
 dep_katana = git https://github.com/inaka/erlang-katana 0.2.7
-dep_shotgun = git https://github.com/inaka/shotgun 0.1.2
+dep_shotgun = git https://github.com/inaka/shotgun 0.1.12
 
 include erlang.mk
 
@@ -27,7 +27,7 @@ shell: app
 
 
 test-shell: build-ct-suites app
-	erl -pa ebin -pa deps/*/ebin -pa test -s sync -s fiar -s shotgun -config config/test.config
+	erl -name fiar@`hostname` -pa ebin -pa deps/*/ebin -pa test -s sync -s fiar -s shotgun -config config/test.config
 
 devtests: tests
 	open logs/index.html

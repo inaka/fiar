@@ -36,16 +36,16 @@ init(_InitArgs, _LastEventId, Req) ->
         {shutdown, 401, [], [], Req1, #{}}
     end
   catch
-    _:notfound -> 
+    _:notfound ->
       {shutdown, 404, [], [], Req, #{}}
   end.
 
 handle_notify({match_updated, Match}, State) ->
   MatchJson = jiffy:encode(fiar_match:to_json(Match)),
-  {send, [{data, MatchJson}, {name, <<"turn">>}], State};
+  {send, #{data => MatchJson, event => <<"turn">>}, State};
 handle_notify({match_deleted, Match}, State) ->
   MatchJson = jiffy:encode(fiar_match:to_json(Match)),
-  {send, [{data, MatchJson}, {name, <<"match_ended">>}], State}.
+  {send, #{data => MatchJson, event => <<"match_ended">>}, State}.
 
 handle_info(stop, State) ->
   {stop, State};

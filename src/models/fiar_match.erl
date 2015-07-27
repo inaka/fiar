@@ -22,7 +22,9 @@
   ]).
 
 -type match() :: proplists:proplist().
--export_type([match/0]).
+-type id() :: integer().
+-type player() :: fiar_user:user().
+-export_type([match/0, id/0, player/0]).
 
 %%% Behaviour callbacks.
 -export([sumo_schema/0, sumo_wakeup/1, sumo_sleep/1]).
@@ -108,6 +110,7 @@ is_player(Uid, Match) ->
 matches_to_json(Matches) ->
   lists:map(fun to_json/1, Matches).
 
+-spec to_json(match()) -> {[{atom(), any()}]}.
 to_json(Match) ->
   { [to_json_attr(K, V) || {K, V} <- Match] }.
 

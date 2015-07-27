@@ -6,20 +6,13 @@
         , find_by_id/1
         ]).
 
--type user() ::
-        #{
-           id => integer(),
-           username => string(),
-           pass => string(),
-           created_at => fiar_utils:datetime(),
-           updated_at => fiar_utils:datetime()
-         }.
+-type user() :: fiar_user:user().
 
 -export_type([user/0]).
 
 create(Username, Pass) ->
   case find_by_username(Username) of
-    notfound -> 
+    notfound ->
       NewUser = fiar_user:new(Username, Pass),
       sumo:persist(fiar_user, NewUser);
     _User ->
@@ -40,7 +33,7 @@ find_by_username(Username) ->
     _      -> notfound
   end.
 
--spec find_by_id(integer()) -> notfound | user().
+-spec find_by_id(integer()) -> user().
 find_by_id(UserId) ->
   case sumo:find(fiar_user, UserId) of
     notfound -> throw(notfound);

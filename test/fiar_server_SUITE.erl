@@ -105,7 +105,8 @@ init_per_testcase(get_connections, Config) -> authenticated(Config);
 init_per_testcase(user_disconnected, Config) -> authenticated(Config);
 init_per_testcase(match_created_event, Config) -> authenticated(Config);
 init_per_testcase(match_ended_event, Config) -> authenticated(Config);
-init_per_testcase(get_events_no_authentication, Config) -> authenticated(Config);
+init_per_testcase(get_events_no_authentication, Config) ->
+  authenticated(Config);
 init_per_testcase(delete_match_invalid_user, Config) -> authenticated(Config);
 init_per_testcase(delete_match, Config) -> authenticated(Config);
 init_per_testcase(current_match_in_first_event, Config) -> basic(Config);
@@ -630,7 +631,7 @@ double_connection(Config) ->
     api_call(put, "/matches/" ++ Mid, Headers1, Body),
 
     timer:sleep(300),
-    [] = shotgun:events(Pid1),
+    [{fin, Ref1, <<>>}] = shotgun:events(Pid1),
     [{nofin, Ref2, _}] = shotgun:events(Pid2),
     ok
   catch
@@ -1075,16 +1076,16 @@ get_events_with_cookie(Config) ->
   {ok, Pid1} = shotgun:open("localhost", 8080),
   {ok, Pid2} = shotgun:open("localhost", 8080),
   try
-    {ok, _} = 
+    {ok, #{status_code := 401}} =
       shotgun:get( Pid1
                  , "/events"
                  , Headers1
                  , #{ async => true
                     , async_mode => sse}),
+
     timer:sleep(500),
-    [Event] = shotgun:events(Pid1),
-    401 = maps:get(status_code, Event),
-    {ok, _} = 
+
+    {ok, _} =
       shotgun:get( Pid2
                  , "/events"
                  , Headers2

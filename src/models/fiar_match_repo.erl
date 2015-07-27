@@ -55,6 +55,7 @@ new_status(won, State) ->
   end;
 new_status(drawn, _State) -> drawn.
 
+-spec get_match(fiar_match:id(), fiar_user:user()) -> fiar_match:match().
 get_match(Mid, User) ->
   case sumo:find(fiar_match, Mid) of
     notfound -> throw(notfound);

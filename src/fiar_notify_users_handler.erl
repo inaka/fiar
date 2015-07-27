@@ -28,15 +28,15 @@ init(_InitArgs, _LastEventId, Req) ->
         process_register(fiar_user:get_id(User)),
         pg2:join(fiar_connected_users, self()),
         ConnectedUsers = get_connected_users(),
-        FirstEvent = [ {data, jiffy:encode(ConnectedUsers)}
-                     , {name, <<"users_connected">>}],
+        FirstEvent = [ #{ data => jiffy:encode(ConnectedUsers)
+                        , event => <<"users_connected">>}],
         fiar:send_event(fiar_user, connected, [User]),
-        {ok, Req, [FirstEvent], #{user => User}};
+        {ok, Req, FirstEvent, #{user => User}};
       {not_authenticated, _AuthHeader, Req1} ->
         {shutdown, 401, [], [], Req1, #{}}
     end
   catch
-    _:notfound -> 
+    _:notfound ->
       {shutdown, 404, [], [], Req, #{}}
   end.
 
@@ -45,16 +45,19 @@ handle_notify({user_conected, User}, State) ->
   CurrentMatches = fiar:current_matches(User),
   CurrentMatchesJson = fiar_match:matches_to_json(CurrentMatches),
   Response = {[{user, UserJson}, {current_matches, CurrentMatchesJson}]},
-  {send, [{data, jiffy:encode(Response)}, {name, <<"user_connected">>}], State};
+  { send
+  , #{data => jiffy:encode(Response), event => <<"user_connected">>}
+  , State
+  };
 handle_notify({user_disconnected, User}, State) ->
   UserJson = jiffy:encode(fiar_user:to_json(User, public)),
-  {send, [{data, UserJson}, {name, <<"user_disconnected">>}], State};
+  {send, #{data => UserJson, event => <<"user_disconnected">>}, State};
 handle_notify({match_started, Match}, State) ->
   MatchJson = jiffy:encode(fiar_match:to_json(Match)),
-  {send, [{data, MatchJson}, {name, <<"match_started">>}], State};
+  {send, #{data => MatchJson, event => <<"match_started">>}, State};
 handle_notify({match_ended, Match}, State) ->
   MatchJson = jiffy:encode(fiar_match:to_json(Match)),
-  {send, [{data, MatchJson}, {name, <<"match_ended">>}], State}.
+  {send, #{data => MatchJson, event => <<"match_ended">>}, State}.
 
 handle_info(stop, State) ->
   {stop, State};
@@ -73,13 +76,13 @@ terminate(_Reason, _Req, _State) ->
 %% @private
 process_register(UserId) ->
   Process = process_name(UserId),
-  case whereis(Process) of
-      undefined -> ok;
-      _ ->
-        Process ! stop,
-        erlang:unregister(Process)
-  end,
-  erlang:register(Process, self()).
+  try erlang:register(Process, self())
+  catch
+    _:badarg ->
+      Process ! stop,
+      erlang:unregister(Process),
+      process_register(UserId)
+  end.
 
 process_name(UserId) ->
   list_to_atom("fiar_user_" ++ integer_to_list(UserId)).

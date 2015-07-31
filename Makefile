@@ -1,6 +1,6 @@
 PROJECT = fiar
 
-DEPS = sumo_db lager eper sync cowlib ranch cowboy lasse jiffy shotgun katana
+DEPS = sumo_db lager eper sync cowlib ranch cowboy lasse jiffy shotgun katana recon
 
 dep_cowlib = git https://github.com/ninenines/cowlib.git 1.0.0
 dep_ranch = git https://github.com/ninenines/ranch.git 1.0.0
@@ -13,7 +13,8 @@ dep_lasse = git https://github.com/inaka/lasse.git 1.0.1
 dep_eper = git https://github.com/massemanet/eper.git 35636bc4de07bc803ea4fc9731fab005d0378c2b
 
 dep_katana = git https://github.com/inaka/erlang-katana 0.2.7
-dep_shotgun = git https://github.com/inaka/shotgun 0.1.2
+dep_shotgun = git https://github.com/benhsu/shotgun HEAD
+dep_recon = git https://github.com/ferd/recon HEAD
 
 include erlang.mk
 

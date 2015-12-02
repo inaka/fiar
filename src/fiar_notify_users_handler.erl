@@ -31,7 +31,7 @@ init(_InitArgs, _LastEventId, Req) ->
         FirstEvent = [ #{ data => jiffy:encode(ConnectedUsers)
                         , event => <<"users_connected">>}],
         fiar:send_event(fiar_user, connected, [User]),
-        {ok, Req, FirstEvent, #{user => User}};
+        {ok, Req1, FirstEvent, #{user => User}};
       {not_authenticated, _AuthHeader, Req1} ->
         {shutdown, 401, [], [], Req1, #{}}
     end

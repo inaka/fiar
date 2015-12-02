@@ -12,7 +12,7 @@
  , fiar_events
  , fiar_matches_handler
  , fiar_notify_handler
- , fiar_notify_user_handler
+ , fiar_notify_users_handler
  , fiar_repo_mysql
  , fiar_single_match_handler
  , fiar_sup

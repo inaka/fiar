@@ -1,3 +1,5 @@
+.erlang.mk/
+fiar.d
 .eunit
 deps
 ebin

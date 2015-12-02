@@ -44,6 +44,9 @@ handle_exception(invalid_column, Req, State) ->
 handle_exception(bad_key, Req, State) ->
   {ok, Req1} = cowboy_req:reply(400, Req),
   {halt, Req1, State};
+handle_exception({badkey, _}, Req, State) -> % R18.x
+  {ok, Req1} = cowboy_req:reply(400, Req),
+  {halt, Req1, State};
 handle_exception(badarg, Req, State) ->
   {ok, Req1} = cowboy_req:reply(400, Req),
   {halt, Req1, State};

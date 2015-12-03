@@ -1,0 +1,14 @@
+db:
+  image: mysql:5.7.9
+  container_name: fiar_db
+  environment:
+    MYSQL_ROOT_PASSWORD: nohaymonedas
+web:
+  image: fiar
+  command: monit -I
+  container_name: fiar_web
+  ports:
+   - "8083:8083"
+  links:
+    - db
+

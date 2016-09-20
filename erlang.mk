@@ -5235,7 +5235,7 @@ define bs_sys_config
 endef
 
 define bs_vm_args
--name $p@127.0.0.1
+-name $p@172.4.0.13
 -setcookie $p
 -heart
 endef
